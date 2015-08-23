@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TS3Plugin", "Plugin\Plugin.vcxproj", "{A48593C7-7CC3-4C46-9705-9BD264A8E95A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{E670886D-CD31-4004-89BF-49C26B824909}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+		Test|x64 = Test|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A48593C7-7CC3-4C46-9705-9BD264A8E95A}.Debug|x64.ActiveCfg = Debug|x64
+		{A48593C7-7CC3-4C46-9705-9BD264A8E95A}.Debug|x64.Build.0 = Debug|x64
+		{A48593C7-7CC3-4C46-9705-9BD264A8E95A}.Release|x64.ActiveCfg = Release|x64
+		{A48593C7-7CC3-4C46-9705-9BD264A8E95A}.Release|x64.Build.0 = Release|x64
+		{A48593C7-7CC3-4C46-9705-9BD264A8E95A}.Test|x64.ActiveCfg = Test|x64
+		{A48593C7-7CC3-4C46-9705-9BD264A8E95A}.Test|x64.Build.0 = Test|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

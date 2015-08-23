@@ -1,0 +1,95 @@
+#include "ClientMetaData.h"
+#include "json/json.h"
+#include "EpochTime.h"
+
+using std::string;
+
+namespace SimpleRadio
+{
+	ClientMetaData::ClientMetaData()
+		: lastUpdate(0)
+		, name("init")
+		, unit("init")
+		, selected(0)
+		, position()
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			this->radio[i].name = "No Radio";
+			this->radio[i].frequency = 0;
+			this->radio[i].modulation = 0;
+		}
+	}
+
+	string ClientMetaData::serialize(bool formatted) const
+	{
+		Json::Value root;
+		root["lastUpdate"] = this->lastUpdate;
+		root["name"] = this->name;
+		root["unit"] = this->unit;
+		root["selected"] = this->selected;
+
+		Json::Value array;
+		for (int i = 0; i < 3; i++)
+		{
+			Json::Value current;
+			current["name"] = this->radio[i].name;
+			current["frequency"] = this->radio[i].frequency;
+			current["modulation"] = this->radio[i].modulation;
+			array.append(current);
+		}
+
+		root["radios"] = array;
+
+		Json::Value position;
+		position["x"] = this->position.x;
+		position["y"] = this->position.y;
+
+		root["pos"] = position;
+
+		if (formatted == true)
+		{
+			Json::StyledWriter writer;
+			return writer.write(root);
+		}
+		else
+		{
+			Json::FastWriter writer;
+			return writer.write(root);
+		}
+	}
+
+	const ClientMetaData ClientMetaData::deserialize(const string& document, bool fromUDP)
+	{
+		ClientMetaData data;
+		Json::Reader reader;
+		Json::Value root;
+		
+		bool success = reader.parse(document, root, false);
+		if (success == true)
+		{
+			data.lastUpdate = GetTickCount64();
+			
+			data.name = root["name"].asString();
+			data.unit = root["unit"].asString();
+			//data.unit =  "TODO";
+			data.selected = root["selected"].asInt();
+
+			data.position.x = root["pos"]["x"].asFloat();
+			data.position.y = root["pos"]["y"].asFloat();
+
+			for (int i = 0; i < 3; i++)
+			{
+				data.radio[i].name = root["radios"][i]["name"].asString();
+				data.radio[i].frequency = std::stod(root["radios"][i]["frequency"].asString());
+				data.radio[i].modulation = root["radios"][i]["modulation"].asInt();
+			}
+		}
+		else
+		{
+			throw string("Failed to parse JSON");
+		}
+
+		return data;
+	}
+}
