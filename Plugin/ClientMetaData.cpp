@@ -1,6 +1,8 @@
 #include "ClientMetaData.h"
 #include "json/json.h"
-#include "EpochTime.h"
+
+#include <windows.h>
+
 
 using std::string;
 

@@ -9,7 +9,6 @@
 #include "Plugin.h"
 #include "ClientMetaData.h"
 #include "json/json.h"
-#include "EpochTime.h"
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -570,6 +569,7 @@ int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* comma
 /* Client changed current server connection handler */
 void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID)
 {
+	plugin.serverHandlerID = serverConnectionHandlerID;
 }
 
 /* Static title shown in the left column in the info frame */
@@ -586,6 +586,7 @@ const char* ts3plugin_infoTitle()
 */
 void ts3plugin_infoData(uint64 serverConnectionHandlerID, uint64 id, enum PluginItemType type, char** data)
 {
+	plugin.serverHandlerID = serverConnectionHandlerID;
 	if (type == PLUGIN_CLIENT)
 	{
 		string info = plugin.getClientInfoData(serverConnectionHandlerID, id);
@@ -610,4 +611,9 @@ void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clien
 void ts3plugin_onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerID, anyID clientID, short* samples, int sampleCount, int channels)
 {
 	plugin.onEditPlaybackVoiceDataEvent(serverConnectionHandlerID, clientID, samples, sampleCount, channels);
+}
+
+void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber)
+{
+	plugin.serverHandlerID = serverConnectionHandlerID;
 }

@@ -13,7 +13,6 @@
 #include <map>
 #include <thread>
 #include "ClientMetaData.h"
-#include "SoundPlayer.h"
 
 
 namespace SimpleRadio
@@ -47,12 +46,14 @@ namespace SimpleRadio
 
 		static void processMessage(const char* message);
 
+		//connected server
+		uint64 serverHandlerID = 1;
+
 
 	private:
 		TS3Functions teamspeak;
 		char* pluginId;
-		//SocketListener socketListener;
-		SoundPlayer mediaPlayer;
+
 		ClientMetaData myClientData;
 		std::map<anyID, ClientMetaData> connectedClient;
 		ULONGLONG lastMessageTime;
@@ -61,8 +62,7 @@ namespace SimpleRadio
 		SOCKET mksocket(struct sockaddr_in *addr);
 
 		void UDPListener();
-		//connected server
-		uint64 serverHandlerID = 1;
+		
 
 		volatile bool listening;
 		std::thread acceptor;

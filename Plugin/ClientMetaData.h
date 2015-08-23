@@ -2,7 +2,6 @@
 #define SR_CLIENTMETADATA_H
 
 #include <string>
-#include "Modulation.h"
 #include "DCSPosition.h"
 
 namespace SimpleRadio

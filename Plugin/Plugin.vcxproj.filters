@@ -15,13 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Modulation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Plugin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SocketListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="json\json.h">
@@ -34,9 +28,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Configuration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SoundPlayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -63,18 +54,12 @@
     <ClInclude Include="ts3_functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EpochTime.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DCSPosition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Plugin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SocketListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="jsoncpp.cpp">
@@ -84,12 +69,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Configuration.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SoundPlayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EpochTime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DCSPosition.cpp">

@@ -134,10 +134,8 @@
     <ClInclude Include="clientlib_publicdefinitions.h" />
     <ClInclude Include="ClientMetaData.h" />
     <ClInclude Include="Configuration.h" />
-    <ClInclude Include="EpochTime.h" />
     <ClInclude Include="json\json-forwards.h" />
     <ClInclude Include="json\json.h" />
-    <ClInclude Include="Modulation.h" />
     <ClInclude Include="Plugin.h" />
     <ClInclude Include="plugin_definitions.h" />
     <ClInclude Include="public_definitions.h" />
@@ -145,19 +143,14 @@
     <ClInclude Include="public_errors_rare.h" />
     <ClInclude Include="public_rare_definitions.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="SocketListener.h" />
-    <ClInclude Include="SoundPlayer.h" />
     <ClInclude Include="ts3_functions.h" />
     <ClInclude Include="DCSPosition.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClientMetaData.cpp" />
     <ClCompile Include="Configuration.cpp" />
-    <ClCompile Include="EpochTime.cpp" />
     <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="Plugin.cpp" />
-    <ClCompile Include="SocketListener.cpp" />
-    <ClCompile Include="SoundPlayer.cpp" />
     <ClCompile Include="DCSPosition.cpp" />
   </ItemGroup>
   <ItemGroup>
