@@ -14,6 +14,7 @@ namespace SimpleRadio
 		, unit("init")
 		, selected(0)
 		, position()
+		, hasRadio(true)
 	{
 		for (int i = 0; i < 3; i++)
 		{
@@ -86,6 +87,15 @@ namespace SimpleRadio
 				data.radio[i].frequency = std::stod(root["radios"][i]["frequency"].asString());
 				data.radio[i].modulation = root["radios"][i]["modulation"].asInt();
 			}
+
+			try {
+				data.hasRadio = root["hasRadio"].asBool();
+			}
+			catch (...)
+			{
+				//catch older versions
+				data.hasRadio = true;
+			}
 		}
 		else
 		{
@@ -94,4 +104,13 @@ namespace SimpleRadio
 
 		return data;
 	}
+
+	/*
+		Is Current if we've had an update within the last 5 seconds
+	*/
+	bool ClientMetaData::isCurrent()
+	{
+		return this->lastUpdate > (GetTickCount64() - 5000ULL);
+	}
+
 }

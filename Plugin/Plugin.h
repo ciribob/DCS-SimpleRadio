@@ -41,6 +41,7 @@ namespace SimpleRadio
 		std::string getClientMetaData(uint64 serverConnectionHandlerId, uint64 clientId) const;
 		
 		void onClientUpdated(uint64 serverConnectionHandlerId, anyID clientId, anyID invokerId);
+		void onHotKeyEvent(const char * hotkeyCommand);
 
 		void onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerId, anyID clientId, short* samples, int sampleCount, int channels);
 
@@ -49,12 +50,14 @@ namespace SimpleRadio
 		//connected server
 		uint64 serverHandlerID = 1;
 
+		TS3Functions teamspeak;
 
 	private:
-		TS3Functions teamspeak;
 		char* pluginId;
 
 		ClientMetaData myClientData;
+		ClientMetaData teamSpeakControlledClientData; //contains override frequencies if FC3
+
 		std::map<anyID, ClientMetaData> connectedClient;
 		ULONGLONG lastMessageTime;
 
@@ -63,9 +66,12 @@ namespace SimpleRadio
 
 		void UDPListener();
 		
+		volatile bool debug;
 
 		volatile bool listening;
 		std::thread acceptor;
+
+		bool allowNonPlayers;
 	
 	};
 };

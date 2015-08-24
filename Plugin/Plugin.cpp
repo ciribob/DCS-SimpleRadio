@@ -14,6 +14,7 @@
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 #include <sstream>
+#include <assert.h>
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -31,7 +32,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.0.1";
+	const char* Plugin::VERSION = "1.0.2";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -41,7 +42,9 @@ namespace SimpleRadio
 		: teamspeak({ 0 })
 		, pluginId(nullptr)
 		, myClientData()
+		, teamSpeakControlledClientData()
 		, connectedClient()
+		, allowNonPlayers(true)
 	{
 	}
 
@@ -51,6 +54,24 @@ namespace SimpleRadio
 		{
 			//Delete other things?!
 			delete[] this->pluginId;
+		}
+	}
+
+	void Plugin::start()
+	{
+		this->listening = true;
+		this->acceptor = thread(&Plugin::UDPListener, this);
+	}
+
+
+	void Plugin::stop()
+	{
+
+		this->listening = false;
+
+		if (this->acceptor.joinable())
+		{
+			this->acceptor.join();
 		}
 	}
 
@@ -70,13 +91,13 @@ namespace SimpleRadio
 
 	bool Plugin::processCommand(uint64 serverConnectionHandlerId, const char* command)
 	{
-		if (strcmp(command, "DCS-SimpleRadio-Test") == 0)
+		if (strcmp(command, "debug") == 0)
 		{
-			this->teamspeak.printMessageToCurrentTab("Command TEST received");
+			this->teamspeak.printMessageToCurrentTab("Command DEBUG received");
 			return true;
 		}
-		
 
+		
 		return false;
 	}
 
@@ -86,26 +107,54 @@ namespace SimpleRadio
 		//const int MHz = 1000000;
 		char buffer[BUFFER_SIZE] = { 0 };
 
-		if (this->myClientData.lastUpdate > 1000)
+
+		try
 		{
-			RadioInformation currentRadio = this->myClientData.radio[myClientData.selected];
-			char status[128] = { 0 };
-			const double MHZ = 1000000;
-			if (this->myClientData.lastUpdate > (GetTickCount64() - 5000ull))
+
+			ClientMetaData clientInfoData;
+
+			anyID myID;
+			if (this->teamspeak.getClientID(serverConnectionHandlerId, &myID) != ERROR_ok) {
+				strcat_s(buffer, BUFFER_SIZE, "Status: Not connected to a server");
+				return buffer;
+			}
+
+			if (myID == clientId)
 			{
-				sprintf_s(status, 128, "Status Good: %s, is flying %s \nSelected Radio %s\nFreq (MHz): %.4f", this->myClientData.name.c_str(), this->myClientData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ);
-				strcat_s(buffer, BUFFER_SIZE, status);
+				clientInfoData = this->myClientData;
 			}
 			else
 			{
-				sprintf_s(status, 128, "Status Unknown: %s, was flying %s - Currently Unknown\nSelected Radio %s\nFreq (MHz): %.4f", this->myClientData.name.c_str(), this->myClientData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency/MHZ);
-				strcat_s(buffer, BUFFER_SIZE, status);
+				clientInfoData = this->connectedClient.at(clientId);
 			}
-	
+
+
+			if (clientInfoData.lastUpdate > 5000ull)
+			{
+				RadioInformation currentRadio = clientInfoData.radio[myClientData.selected];
+				char status[128] = { 0 };
+				const double MHZ = 1000000;
+				if (clientInfoData.lastUpdate > (GetTickCount64() - 5000ull))
+				{
+					sprintf_s(status, 128, "Status Good: %s, is flying %s \nSelected Radio %s\nFreq (MHz): %.4f %s", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM");
+					strcat_s(buffer, BUFFER_SIZE, status);
+				}
+				else
+				{
+					sprintf_s(status, 128, "Status Unknown: %s, was flying %s - Currently Unknown\nSelected Radio %s\nFreq (MHz): %.4f %s", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM");
+					strcat_s(buffer, BUFFER_SIZE, status);
+				}
+
+			}
+			else
+			{
+				strcat_s(buffer, BUFFER_SIZE, "Status: Not In Game\n");
+			}
 		}
-		else
+		catch (std::out_of_range)
 		{
-			strcat_s(buffer, BUFFER_SIZE, "Status: Not In Game\n");
+			// Client not in map, return
+			strcat_s(buffer, BUFFER_SIZE, "Status: Not In Game or Not Running Plugin\n");
 		}
 
 		return buffer;
@@ -124,9 +173,114 @@ namespace SimpleRadio
 		return data;
 	}
 
-	
+	void Plugin::onHotKeyEvent(const char * hotkeyCommand) {
+		/*
+		
+		CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select UHF AM");
+		CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select VHF AM");
+		CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select FM");
 
-	// Callback
+		CREATE_HOTKEY("DCS-SR-FREQ-10-UP", "Frequency Up - 10MHz");
+		CREATE_HOTKEY("DCS-SR-FREQ-10-DOWN", "Frequency Down - 10MHz");
+
+		CREATE_HOTKEY("DCS-SR-FREQ-1-UP", "Frequency Up - 1MHz");
+		CREATE_HOTKEY("DCS-SR-FREQ-1-DOWN", "Frequency Down - 1MHz");
+
+		CREATE_HOTKEY("DCS-SR-FREQ-01-UP", "Frequency Up - 0.1MHz");
+		CREATE_HOTKEY("DCS-SR-FREQ-01-DOWN", "Frequency Down - 0.1MHz");
+		*/
+		//RadioInformation selectedRadio = this->teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected];
+
+		RadioInformation &selectedRadio = this->teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected];
+
+		if (selectedRadio.frequency == 0)
+		{
+			//IGNORE
+			return;
+		}
+
+		const double MHZ = 1000000;
+
+		char buffer[256] = { 0 };
+
+		if (strcmp("DCS-SR-FREQ-10-UP", hotkeyCommand) == 0)
+		{
+
+			selectedRadio.frequency = selectedRadio.frequency + (10.0 * MHZ);
+		
+			sprintf_s(buffer, 256, "Up 10MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
+
+			this->teamspeak.printMessageToCurrentTab(buffer);
+		}
+		else if (strcmp("DCS-SR-FREQ-10-DOWN", hotkeyCommand) == 0)
+		{
+			selectedRadio.frequency = selectedRadio.frequency - (10.0 * MHZ);
+
+			sprintf_s(buffer, 256, "Down 10MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
+
+			this->teamspeak.printMessageToCurrentTab(buffer);
+		}
+		else if (strcmp("DCS-SR-FREQ-1-UP", hotkeyCommand) == 0)
+		{
+			selectedRadio.frequency = selectedRadio.frequency + (1.0 * MHZ);
+
+			sprintf_s(buffer, 256, "Up 1MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
+
+			this->teamspeak.printMessageToCurrentTab(buffer);
+		}
+		else if (strcmp("DCS-SR-FREQ-1-DOWN", hotkeyCommand) == 0)
+		{
+			selectedRadio.frequency = selectedRadio.frequency - (1.0 * MHZ);
+
+			sprintf_s(buffer, 256, "Down 1MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
+
+			this->teamspeak.printMessageToCurrentTab(buffer);
+		}
+		else if (strcmp("DCS-SR-FREQ-01-UP", hotkeyCommand) == 0)
+		{
+			selectedRadio.frequency = selectedRadio.frequency + (0.1 * MHZ);
+
+			sprintf_s(buffer, 256, "UP 0.1MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
+
+			this->teamspeak.printMessageToCurrentTab(buffer);
+		}
+		else if (strcmp("DCS-SR-FREQ-01-DOWN", hotkeyCommand) == 0)
+		{
+			selectedRadio.frequency = selectedRadio.frequency - (0.1 * MHZ);
+
+			sprintf_s(buffer, 256, "Down 0.1MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
+
+			this->teamspeak.printMessageToCurrentTab(buffer);
+		}
+		else if (strcmp("DCS-SR-TRANSMIT-UHF", hotkeyCommand) == 0)
+		{
+			this->teamSpeakControlledClientData.selected = 0;
+
+			sprintf_s(buffer, 256, "Selected UHF -  Current Freq (MHz): %.4f", teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected].frequency / MHZ);
+
+			this->teamspeak.printMessageToCurrentTab(buffer);
+		}
+		else if (strcmp("DCS-SR-TRANSMIT-VHF", hotkeyCommand) == 0)
+		{
+			this->teamSpeakControlledClientData.selected = 1;
+
+			sprintf_s(buffer, 256, "Selected VHF -  Current Freq (MHz): %.4f", teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected].frequency / MHZ);
+
+			this->teamspeak.printMessageToCurrentTab(buffer);
+		}
+		else if (strcmp("DCS-SR-TRANSMIT-FM", hotkeyCommand) == 0)
+		{
+			this->teamSpeakControlledClientData.selected = 2;
+
+			sprintf_s(buffer, 256, "Selected FM -  Current Freq (MHz): %.4f", teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected].frequency / MHZ);
+
+			this->teamspeak.printMessageToCurrentTab(buffer);
+		}
+		
+
+		
+	}
+
 	void Plugin::onClientUpdated(uint64 serverConnectionHandlerId, anyID clientId, anyID invokerId)
 	{
 
@@ -247,12 +401,10 @@ namespace SimpleRadio
 				}
 
 				//check both updates are valid
-				if (this->myClientData.lastUpdate > (GetTickCount64() - 5000ULL) 
-					&& talkingClient.lastUpdate  > (GetTickCount64() - 5000ULL)
+				if (this->myClientData.isCurrent()
+					&& talkingClient.isCurrent()
 					&& talkingClient.selected >=0 && talkingClient.selected < 3)
 				{
-
-					
 					//can receive?
 					bool canReceive = false;
 
@@ -267,7 +419,9 @@ namespace SimpleRadio
 						
 					//	this->teamspeak.printMessageToCurrentTab(oss.str().c_str());
 
-						if (myRadio.frequency == sendingRadio.frequency && myRadio.modulation == sendingRadio.modulation )
+						if (myRadio.frequency == sendingRadio.frequency 
+							&& myRadio.modulation == sendingRadio.modulation 
+							&& myRadio.frequency > 0)
 						{
 
 							//if (isTalking)
@@ -359,11 +513,10 @@ namespace SimpleRadio
 	{
 		WSADATA            wsaData;
 		SOCKET             ReceivingSocket;
-		SOCKADDR_IN        ReceiverAddr;
 		
 		SOCKADDR_IN        SenderAddr;
 		int                SenderAddrSize = sizeof(SenderAddr);
-		int                ByteReceived = 5, ErrorCode;
+		int                ByteReceived = 5;
 		char ch = 'Y';
 
 		char          ReceiveBuf[768]; //maximum UDP Packet Size
@@ -389,7 +542,11 @@ namespace SimpleRadio
 		ReceivingSocket = mksocket(&addr);
 
 		/* use setsockopt() to request that the kernel join a multicast group */
-		mreq.imr_multiaddr.s_addr = inet_addr("239.255.50.10");
+
+		// store this IP address in sa:
+		inet_pton(AF_INET, "239.255.50.10", &(mreq.imr_multiaddr.s_addr));
+
+		//mreq.imr_multiaddr.s_addr = inet_addr("239.255.50.10");
 		mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 		if (setsockopt(ReceivingSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
 			printf("Error configuring ADD MEMBERSHIO");
@@ -414,6 +571,51 @@ namespace SimpleRadio
 						
 						//this->teamspeak.printMessageToCurrentTab(ReceiveBuf);
 						ClientMetaData clientMetaData = ClientMetaData::deserialize(ReceiveBuf, true);
+
+						if (clientMetaData.hasRadio == false)
+						{
+							
+							//allow frequency override
+							//intialise with dcs values
+							if (this->teamSpeakControlledClientData.radio[0].frequency == 0)
+							{
+								for (int i = 0; i < 3; i++)
+								{
+									//reset all the radios
+									this->teamSpeakControlledClientData.radio[i].frequency = clientMetaData.radio[i].frequency;
+								}
+
+								//init selected
+								this->teamSpeakControlledClientData.selected = clientMetaData.selected;
+
+								this->teamspeak.printMessageToCurrentTab("Copied Everything");
+							}
+
+							//overwrite received metadata and resend modified to avoid race conditions we use update our own metadata
+
+							for (int i = 0; i < 3; i++)
+							{
+								//overwrite current radio frequencies
+								clientMetaData.radio[i].frequency = this->teamSpeakControlledClientData.radio[i].frequency;
+							}
+
+							//overrwrite selected
+							clientMetaData.selected = this->teamSpeakControlledClientData.selected;
+				
+						}
+						else
+						{
+							for (int i = 0; i < 3; i++)
+							{
+								//reset all the radios
+								this->teamSpeakControlledClientData.radio[i].frequency = 0;
+							}
+						}
+
+						//TODO: modify as appropriate with locally set frequency or selected Radio
+						//if hasRadio == false then
+						//use the teamspeak settings
+						//if hasRadio == true, ignore TS 
 
 						std::string serialised = clientMetaData.serialize();
 
@@ -454,24 +656,7 @@ namespace SimpleRadio
 			printf("Server: WSACleanup() is OK\n");
 		// Back to the system
 	}
-
-	void Plugin::start()
-	{
-		this->listening = true;
-		this->acceptor = thread(&Plugin::UDPListener, this);
-	}
-
-
-	void Plugin::stop()
-	{
-
-		this->listening = false;
-
-		if (this->acceptor.joinable())
-		{
-			this->acceptor.join();
-		}
-	}
+	
 }
 
 /* Unique name identifying this plugin */
@@ -616,4 +801,48 @@ void ts3plugin_onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerID, an
 void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber)
 {
 	plugin.serverHandlerID = serverConnectionHandlerID;
+}
+
+/* Helper function to create a hotkey */
+static struct PluginHotkey* createHotkey(const char* keyword, const char* description) {
+	struct PluginHotkey* hotkey = (struct PluginHotkey*)malloc(sizeof(struct PluginHotkey));
+	strcpy_s(hotkey->keyword, PLUGIN_HOTKEY_BUFSZ, keyword);
+	strcpy_s(hotkey->description, PLUGIN_HOTKEY_BUFSZ, description);
+	return hotkey;
+}
+
+/* Some makros to make the code to create hotkeys a bit more readable */
+#define BEGIN_CREATE_HOTKEYS(x) const size_t sz = x + 1; size_t n = 0; *hotkeys = (struct PluginHotkey**)malloc(sizeof(struct PluginHotkey*) * sz);
+#define CREATE_HOTKEY(a, b) (*hotkeys)[n++] = createHotkey(a, b);
+#define END_CREATE_HOTKEYS (*hotkeys)[n++] = NULL; assert(n == sz);
+
+/*
+* Initialize plugin hotkeys. If your plugin does not use this feature, this function can be omitted.
+* Hotkeys require ts3plugin_registerPluginID and ts3plugin_freeMemory to be implemented.
+* This function is automatically called by the client after ts3plugin_init.
+*/
+void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
+	/* Register hotkeys giving a keyword and a description.
+	* The keyword will be later passed to ts3plugin_onHotkeyEvent to identify which hotkey was triggered.
+	* The description is shown in the clients hotkey dialog. */
+	BEGIN_CREATE_HOTKEYS(9);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
+	CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select UHF AM");
+	CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select VHF AM");
+	CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select FM");
+	
+	CREATE_HOTKEY("DCS-SR-FREQ-10-UP", "Frequency Up - 10MHz");
+	CREATE_HOTKEY("DCS-SR-FREQ-10-DOWN", "Frequency Down - 10MHz");
+
+	CREATE_HOTKEY("DCS-SR-FREQ-1-UP", "Frequency Up - 1MHz");
+	CREATE_HOTKEY("DCS-SR-FREQ-1-DOWN", "Frequency Down - 1MHz");
+
+	CREATE_HOTKEY("DCS-SR-FREQ-01-UP", "Frequency Up - 0.1MHz");
+	CREATE_HOTKEY("DCS-SR-FREQ-01-DOWN", "Frequency Down - 0.1MHz");
+
+	END_CREATE_HOTKEYS;
+
+	/* The client will call ts3plugin_freeMemory to release all allocated memory */
+}
+void ts3plugin_onHotkeyEvent(const char* keyword) {	
+	plugin.onHotKeyEvent(keyword);
 }

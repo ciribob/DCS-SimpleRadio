@@ -20,14 +20,15 @@ namespace SimpleRadio
 		ClientMetaData();
 		std::string serialize(bool formatted = false) const;
 		static const ClientMetaData deserialize(const std::string& document, bool fromUDP);
+		bool isCurrent();
 
-	public:
 		unsigned long long lastUpdate;
 		std::string name;
 		std::string unit;
 		int selected;
 		DCSPosition position;
 		RadioInformation radio[3];
+		bool hasRadio;
 	};
 };
 

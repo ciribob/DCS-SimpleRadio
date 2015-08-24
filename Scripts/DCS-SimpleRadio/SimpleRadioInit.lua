@@ -84,7 +84,7 @@ LuaExportStop = function()
 end
 
 LuaExportActivityNextEvent = function(tCurrent)
-    local tNext = tCurrent + 0.25
+    local tNext = tCurrent + 0.5
 
     pcall(function()
         
@@ -100,7 +100,8 @@ LuaExportActivityNextEvent = function(tCurrent)
                 { id = 1, name = "init", frequency = 0, modulation = 0 },
                 { id = 2, name = "init", frequency = 0, modulation = 0 },
                 { id = 3, name = "init", frequency = 0, modulation = 0 }
-            }
+            },
+            hasRadio = true
         }
 
         local _data = LoGetSelfData()
@@ -136,7 +137,7 @@ LuaExportActivityNextEvent = function(tCurrent)
             else
                 -- FC 3
                 _update.radios[1].name = "FC3 UHF"
-                _update.radios[1].frequency = 251.0*10000000
+                _update.radios[1].frequency = 251.0*1000000
                 _update.radios[1].modulation = 0
 
                 _update.radios[2].name = "FC3 VHF"
@@ -144,10 +145,12 @@ LuaExportActivityNextEvent = function(tCurrent)
                 _update.radios[2].modulation = 0
 
                 _update.radios[3].name = "FC3 FM"
-                _update.radios[3].frequency = 30
+                _update.radios[3].frequency = 30.0*1000000
                 _update.radios[3].modulation = 1
-
+                
                 _update.volume = {100, 100, 100};
+
+                _update.hasRadio = false;
 
                 _update.selected = 1
             end
@@ -269,6 +272,7 @@ function SR.exportRadioMI8(_data)
     end
 
     return _data
+
 
 end
 
