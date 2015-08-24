@@ -72,6 +72,8 @@ namespace SimpleRadio
 		std::thread acceptor;
 
 		bool allowNonPlayers;
+
+		bool switchToUnicast;
 	
 	};
 };

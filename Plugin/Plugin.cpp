@@ -32,7 +32,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.0.2";
+	const char* Plugin::VERSION = "1.0.3";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -45,6 +45,7 @@ namespace SimpleRadio
 		, teamSpeakControlledClientData()
 		, connectedClient()
 		, allowNonPlayers(true)
+		, switchToUnicast(false)
 	{
 	}
 
@@ -86,7 +87,7 @@ namespace SimpleRadio
 		this->pluginId = new char[len + 1];
 		strcpy_s(this->pluginId, len + 1, id);
 
-	
+
 	}
 
 	bool Plugin::processCommand(uint64 serverConnectionHandlerId, const char* command)
@@ -96,8 +97,30 @@ namespace SimpleRadio
 			this->teamspeak.printMessageToCurrentTab("Command DEBUG received");
 			return true;
 		}
+		else if (strcmp(command, "switch") == 0)
+		{
+			if (this->switchToUnicast)
+			{
+				this->switchToUnicast = false;
 
-		
+				this->teamspeak.printMessageToCurrentTab("Switching to Multicast");
+			}
+			else
+			{
+				this->switchToUnicast = true;
+				this->teamspeak.printMessageToCurrentTab("Switching to Unicast");
+			}
+
+
+			this->stop();
+			this->start();
+
+			this->teamspeak.printMessageToCurrentTab("Switched");
+
+			return true;
+		}
+
+
 		return false;
 	}
 
@@ -134,6 +157,13 @@ namespace SimpleRadio
 				RadioInformation currentRadio = clientInfoData.radio[myClientData.selected];
 				char status[128] = { 0 };
 				const double MHZ = 1000000;
+
+				//catch divide by zero
+				if (currentRadio.frequency == 0 || currentRadio.frequency == 0.0)
+				{
+					currentRadio.frequency = -1;
+				}
+
 				if (clientInfoData.lastUpdate > (GetTickCount64() - 5000ull))
 				{
 					sprintf_s(status, 128, "Status Good: %s, is flying %s \nSelected Radio %s\nFreq (MHz): %.4f %s", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM");
@@ -175,7 +205,7 @@ namespace SimpleRadio
 
 	void Plugin::onHotKeyEvent(const char * hotkeyCommand) {
 		/*
-		
+
 		CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select UHF AM");
 		CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select VHF AM");
 		CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select FM");
@@ -191,9 +221,26 @@ namespace SimpleRadio
 		*/
 		//RadioInformation selectedRadio = this->teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected];
 
+		if (strcmp("DCS-SR-TOGGLE-MUTE", hotkeyCommand) == 0)
+		{
+			this->allowNonPlayers = !this->allowNonPlayers;
+
+			if (this->allowNonPlayers)
+			{
+				this->teamspeak.printMessageToCurrentTab("Un-muting clients NOT in an aircraft");
+			}
+			else
+			{
+				this->teamspeak.printMessageToCurrentTab("Muting clients NOT in an aircraft");
+			}
+			return;
+
+		}
+
+
 		RadioInformation &selectedRadio = this->teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected];
 
-		if (selectedRadio.frequency == 0)
+		if (selectedRadio.frequency < 100 || selectedRadio.frequency == 0 || this->myClientData.hasRadio == true)
 		{
 			//IGNORE
 			return;
@@ -207,7 +254,7 @@ namespace SimpleRadio
 		{
 
 			selectedRadio.frequency = selectedRadio.frequency + (10.0 * MHZ);
-		
+
 			sprintf_s(buffer, 256, "Up 10MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
 
 			this->teamspeak.printMessageToCurrentTab(buffer);
@@ -278,7 +325,6 @@ namespace SimpleRadio
 		}
 		
 
-		
 	}
 
 	void Plugin::onClientUpdated(uint64 serverConnectionHandlerId, anyID clientId, anyID invokerId)
@@ -287,9 +333,9 @@ namespace SimpleRadio
 		char* bufferForMetaData;
 		DWORD error;
 
-	//save SERVERID
+		//save SERVERID
 		serverHandlerID = serverConnectionHandlerId;
-		
+
 		anyID myID;
 		if (this->teamspeak.getClientID(serverConnectionHandlerId, &myID) != ERROR_ok) {
 
@@ -323,16 +369,16 @@ namespace SimpleRadio
 		}
 
 		//Called every time and update happens on a client
-	
+
 
 		if ((error = this->teamspeak.getClientVariableAsString(serverConnectionHandlerId, clientId, CLIENT_META_DATA, &bufferForMetaData)) != ERROR_ok) {
 
 		}
 		else
 		{
-			
-			try{
-						
+
+			try {
+
 				ClientMetaData metadata = ClientMetaData::deserialize(bufferForMetaData, false);
 
 				auto ret = this->connectedClient.insert(std::pair<anyID, ClientMetaData>(clientId, metadata));
@@ -340,143 +386,162 @@ namespace SimpleRadio
 				if (!ret.second)
 				{
 					this->connectedClient[clientId] = metadata;
-				//	this->teamspeak.printMessageToCurrentTab("Updated Client!");
-					
-					//existed
-					//ret.second = metadata;
+					//	this->teamspeak.printMessageToCurrentTab("Updated Client!");
+
+						//existed
+						//ret.second = metadata;
 				}
-				
+
 				//this->teamspeak.printMessageToCurrentTab("Recevied From Clients!");
 				//this->teamspeak.printMessageToCurrentTab(bufferForMetaData);
 			}
 			catch (...)
 			{
 				this->teamspeak.logMessage("Failed to parse client metadata", LogLevel_ERROR, Plugin::NAME, 0);
-			
+
 			}
 
 
 		}
-		
+
 
 		this->teamspeak.freeMemory(bufferForMetaData);
 	}
 
 	void Plugin::onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerId, anyID clientId, short* samples, int sampleCount, int channels)
 	{
-		ClientMetaData talkingClient ;
+		//can receive?
+		bool canReceive = false;
+
+		ClientMetaData talkingClient;
 		try
 		{
-			if (this->connectedClient.empty() == false)
+
+			talkingClient = this->connectedClient.at(clientId);
+
+			// Is transmitting?
+			int talkFlag;
+			bool isTalking = false;
+			if (this->teamspeak.getClientSelfVariableAsInt(serverConnectionHandlerId, CLIENT_FLAG_TALKING, &talkFlag) == ERROR_ok)
 			{
-				talkingClient = this->connectedClient.at(clientId);
+				isTalking = talkFlag == STATUS_TALKING;
+			}
+			else
+			{
+				// Failed to get talkFlag value, assume not talking
+			}
 
-				// Is transmitting?
-				int talkFlag;
-				bool isTalking = false;
-				if (this->teamspeak.getClientSelfVariableAsInt(serverConnectionHandlerId, CLIENT_FLAG_TALKING, &talkFlag) == ERROR_ok)
+			if (isTalking)
+			{
+				/*if (this->currentRadio == receiver)
 				{
-					isTalking = talkFlag == STATUS_TALKING;
-				}
-				else
-				{
-					// Failed to get talkFlag value, assume not talking
-				}
-
-				if (isTalking)
-				{
-					/*if (this->currentRadio == receiver)
+					for (int i = 0; i < sampleCount; ++i)
 					{
-						for (int i = 0; i < sampleCount; ++i)
-						{
-							samples[i] = 0;
-						}
+						samples[i] = 0;
+					}
 
-						return;
-					}*/
-				}
-				else
+					return;
+				}*/
+			}
+			else
+			{
+
+			}
+
+			//check both updates are valid
+			if (this->myClientData.isCurrent()
+				&& talkingClient.isCurrent()
+				&& talkingClient.selected >= 0 && talkingClient.selected < 3)
+			{
+
+
+				RadioInformation sendingRadio = talkingClient.radio[talkingClient.selected];
+
+				for (int i = 0; i < 3; i++)
 				{
-
-				}
-
-				//check both updates are valid
-				if (this->myClientData.isCurrent()
-					&& talkingClient.isCurrent()
-					&& talkingClient.selected >=0 && talkingClient.selected < 3)
-				{
-					//can receive?
-					bool canReceive = false;
-
-					RadioInformation sendingRadio = talkingClient.radio[talkingClient.selected];
-
-					for (int i = 0; i < 3; i++)
-					{
-						RadioInformation myRadio = this->myClientData.radio[i];
+					RadioInformation myRadio = this->myClientData.radio[i];
 
 					//	std::ostringstream oss;
 				//oss << "Receiving On: " <<myRadio.frequency << " From "<<sendingRadio.frequency;
-						
+
 					//	this->teamspeak.printMessageToCurrentTab(oss.str().c_str());
 
-						if (myRadio.frequency == sendingRadio.frequency 
-							&& myRadio.modulation == sendingRadio.modulation 
-							&& myRadio.frequency > 0)
-						{
-
-							//if (isTalking)
-							//{
-							//	RadioInformation currentRadio = this->myClientData.radio[myClientData.selected];
-
-							//	if (currentRadio.frequency == sendingRadio.frequency && currentRadio.modulation == sendingRadio.modulation)
-							//	{
-							//		//comment in for testing
-							//		canReceive = true;
-							//	}
-							//	else
-							//	{
-							//		canReceive = true;
-							//		break;
-							//	}
-
-							//}
-							//else
-							//{
-								//not talking on the same radio as we're receving on
-								canReceive = true;
-								break;
-							//}
-						}
-					}
-				
-					if (!canReceive)
+					if (myRadio.frequency == sendingRadio.frequency
+						&& myRadio.modulation == sendingRadio.modulation
+						&& myRadio.frequency > 1)
 					{
-						/*for (int i = 0; i < sampleCount; ++i)
-						{
-							samples[i] = samples[i] * getVolume();
-						}*/
 
-						for (int i = 0; i < sampleCount; i++)
-						{
-							for (int j = 0; j < channels; j++)
-								samples[i * channels + j] = 0.0f;
-						}
+						//if (isTalking)
+						//{
+						//	RadioInformation currentRadio = this->myClientData.radio[myClientData.selected];
 
-					/*	for (int i = 0; i < sampleCount; ++i)
-						{
-							samples[i] = samples[i] * 0;
-						}*/
+						//	if (currentRadio.frequency == sendingRadio.frequency && currentRadio.modulation == sendingRadio.modulation)
+						//	{
+						//		//comment in for testing
+						//		canReceive = true;
+						//	}
+						//	else
+						//	{
+						//		canReceive = true;
+						//		break;
+						//	}
+
+						//}
+						//else
+						//{
+							//not talking on the same radio as we're receving on
+						canReceive = true;
+						break;
+						//}
 					}
 				}
 			}
+			else
+			{
+				if (this->myClientData.isCurrent())
+				{
+					canReceive = this->allowNonPlayers;
+				}
+				else
+				{
+					canReceive = true;
+				}
+				
+			}
+
 		}
 		catch (...)
 		{
-			//not there
-			return;
+			if (this->myClientData.isCurrent())
+			{
+				canReceive = this->allowNonPlayers;
+			}
+			else
+			{
+				canReceive = true;
+			}
 		}
 
-		
+		if (!canReceive)
+		{
+			/*for (int i = 0; i < sampleCount; ++i)
+			{
+			samples[i] = samples[i] * getVolume();
+			}*/
+
+			for (int i = 0; i < sampleCount; i++)
+			{
+				for (int j = 0; j < channels; j++)
+					samples[i * channels + j] = 0.0f;
+			}
+
+			/*	for (int i = 0; i < sampleCount; ++i)
+			{
+			samples[i] = samples[i] * 0;
+			}*/
+		}
+
+
 	}
 
 	int Plugin::recvfromTimeOutUDP(SOCKET socket, long sec, long usec)
@@ -502,8 +567,14 @@ namespace SimpleRadio
 		int opt = 1;
 		if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
 			return NULL;
-		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt)) < 0)
-			return NULL;
+
+		if (this->switchToUnicast == false)
+		{
+			if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt)) < 0)
+				return NULL;
+		}
+
+
 		if (bind(sock, (struct sockaddr *)addr, sizeof(struct sockaddr_in)) < 0)
 			return NULL;
 		return sock;
@@ -513,7 +584,7 @@ namespace SimpleRadio
 	{
 		WSADATA            wsaData;
 		SOCKET             ReceivingSocket;
-		
+
 		SOCKADDR_IN        SenderAddr;
 		int                SenderAddrSize = sizeof(SenderAddr);
 		int                ByteReceived = 5;
@@ -536,24 +607,37 @@ namespace SimpleRadio
 		struct sockaddr_in addr;
 
 		addr.sin_family = AF_INET;
-		addr.sin_port = htons(5050);
+
+		if (this->switchToUnicast == false)
+		{
+			addr.sin_port = htons(5050);
+		}
+		else
+		{
+			addr.sin_port = htons(5056);
+		}
+
+
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 		ReceivingSocket = mksocket(&addr);
 
 		/* use setsockopt() to request that the kernel join a multicast group */
 
-		// store this IP address in sa:
-		inet_pton(AF_INET, "239.255.50.10", &(mreq.imr_multiaddr.s_addr));
+		if (this->switchToUnicast == false)
+		{
+			// store this IP address in sa:
+			inet_pton(AF_INET, "239.255.50.10", &(mreq.imr_multiaddr.s_addr));
 
-		//mreq.imr_multiaddr.s_addr = inet_addr("239.255.50.10");
-		mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-		if (setsockopt(ReceivingSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
-			printf("Error configuring ADD MEMBERSHIO");
+			//mreq.imr_multiaddr.s_addr = inet_addr("239.255.50.10");
+			mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+			if (setsockopt(ReceivingSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
+				printf("Error configuring ADD MEMBERSHIO");
 
+			}
 		}
 
-	//	printf("Server: I\'m ready to receive a datagram...\n");
+		//	printf("Server: I\'m ready to receive a datagram...\n");
 		while (this->listening)
 		{
 
@@ -568,16 +652,16 @@ namespace SimpleRadio
 					{
 
 						ReceiveBuf[ByteReceived - 1] = 0; //add terminator
-						
+
 						//this->teamspeak.printMessageToCurrentTab(ReceiveBuf);
 						ClientMetaData clientMetaData = ClientMetaData::deserialize(ReceiveBuf, true);
 
 						if (clientMetaData.hasRadio == false)
 						{
-							
+
 							//allow frequency override
 							//intialise with dcs values
-							if (this->teamSpeakControlledClientData.radio[0].frequency == 0)
+							if (this->teamSpeakControlledClientData.radio[0].frequency < 1)
 							{
 								for (int i = 0; i < 3; i++)
 								{
@@ -601,14 +685,14 @@ namespace SimpleRadio
 
 							//overrwrite selected
 							clientMetaData.selected = this->teamSpeakControlledClientData.selected;
-				
+
 						}
 						else
 						{
 							for (int i = 0; i < 3; i++)
 							{
 								//reset all the radios
-								this->teamSpeakControlledClientData.radio[i].frequency = 0;
+								this->teamSpeakControlledClientData.radio[i].frequency = -1;
 							}
 						}
 
@@ -656,7 +740,7 @@ namespace SimpleRadio
 			printf("Server: WSACleanup() is OK\n");
 		// Back to the system
 	}
-	
+
 }
 
 /* Unique name identifying this plugin */
@@ -825,11 +909,11 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	/* Register hotkeys giving a keyword and a description.
 	* The keyword will be later passed to ts3plugin_onHotkeyEvent to identify which hotkey was triggered.
 	* The description is shown in the clients hotkey dialog. */
-	BEGIN_CREATE_HOTKEYS(9);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
+	BEGIN_CREATE_HOTKEYS(10);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select UHF AM");
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select VHF AM");
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select FM");
-	
+
 	CREATE_HOTKEY("DCS-SR-FREQ-10-UP", "Frequency Up - 10MHz");
 	CREATE_HOTKEY("DCS-SR-FREQ-10-DOWN", "Frequency Down - 10MHz");
 
@@ -839,10 +923,12 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	CREATE_HOTKEY("DCS-SR-FREQ-01-UP", "Frequency Up - 0.1MHz");
 	CREATE_HOTKEY("DCS-SR-FREQ-01-DOWN", "Frequency Down - 0.1MHz");
 
+	CREATE_HOTKEY("DCS-SR-TOGGLE-MUTE", "Toggle Mute on Outsiders");
+
 	END_CREATE_HOTKEYS;
 
 	/* The client will call ts3plugin_freeMemory to release all allocated memory */
 }
-void ts3plugin_onHotkeyEvent(const char* keyword) {	
+void ts3plugin_onHotkeyEvent(const char* keyword) {
 	plugin.onHotKeyEvent(keyword);
 }

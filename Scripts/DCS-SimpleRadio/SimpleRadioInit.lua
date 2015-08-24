@@ -147,7 +147,7 @@ LuaExportActivityNextEvent = function(tCurrent)
                 _update.radios[3].name = "FC3 FM"
                 _update.radios[3].frequency = 30.0*1000000
                 _update.radios[3].modulation = 1
-                
+
                 _update.volume = {100, 100, 100};
 
                 _update.hasRadio = false;
@@ -156,6 +156,7 @@ LuaExportActivityNextEvent = function(tCurrent)
             end
 
             socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
+            socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
 
         end
 

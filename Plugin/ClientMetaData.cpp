@@ -9,7 +9,7 @@ using std::string;
 namespace SimpleRadio
 {
 	ClientMetaData::ClientMetaData()
-		: lastUpdate(0)
+		: lastUpdate(1)
 		, name("init")
 		, unit("init")
 		, selected(0)
@@ -19,7 +19,7 @@ namespace SimpleRadio
 		for (int i = 0; i < 3; i++)
 		{
 			this->radio[i].name = "No Radio";
-			this->radio[i].frequency = 0;
+			this->radio[i].frequency = -1;
 			this->radio[i].modulation = 0;
 		}
 	}
