@@ -1,0 +1,47 @@
+﻿<Window x:Class="RadioGui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RadioGui"
+        mc:Ignorable="d"
+        ResizeMode="CanMinimize"
+        Topmost="True"
+       
+        Title="DCS-SimpleRadio" Height="225.414" Width="120">
+
+    <WrapPanel d:IsLocked="True">
+        <Label x:Name="radio1Label" Content="No Radio" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="110" Margin="2" d:IsLocked="True"/>
+        <TextBlock x:Name="radio1Frequency" HorizontalAlignment="Center"  TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"
+        	Margin="2"
+        	Background="Black" Foreground="Orange" Text="000.00AM" d:IsLocked="True"/>
+        <Ellipse  x:Name="radio1Active" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" d:IsLocked="True" />
+
+        <Label x:Name="radio2Label" Content="No Radio" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="110" Margin="2" d:IsLocked="True"/>
+
+        <TextBlock x:Name="radio2Frequency" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"
+        		Margin="2"
+        	Background="Black" Foreground="Orange" d:IsLocked="True"><Run Text="000.00"/><Run Text="AM"/></TextBlock>
+        <Ellipse  x:Name="radio2Active" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" d:IsLocked="True" />
+
+        <Label x:Name="radio3Label" Content="No Radio" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="110" Margin="2" d:IsLocked="True"/>
+
+        <TextBlock x:Name="radio3Frequency" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"
+        	Margin="2"
+        	Background="Black" Foreground="Orange" d:IsLocked="True"><Run Text="000.00"/><Run Text="AM"/></TextBlock>
+        <Ellipse  x:Name="radio3Active" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" d:IsLocked="True" />
+
+        <Ellipse  x:Name="statusIndicator" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" d:IsLocked="True" />
+        <Label x:Name="statusLabel" Content="Not in Game" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="90" Margin="2" Height="20" Padding="2" d:IsLocked="True"/>
+
+        <Ellipse  x:Name="allowNonPlayersIndicator" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" d:IsLocked="True" />
+        <Label x:Name="allowNonPlayers" Content="Not in Game" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="90" Margin="2" Height="20" Padding="2" d:IsLocked="True"/>
+
+
+        <Grid d:IsLocked="True"/>
+
+    </WrapPanel>
+
+
+
+</Window>

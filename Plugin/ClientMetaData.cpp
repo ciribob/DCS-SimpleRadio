@@ -15,6 +15,7 @@ namespace SimpleRadio
 		, selected(0)
 		, position()
 		, hasRadio(true)
+		, groundCommander(false)
 	{
 		for (int i = 0; i < 3; i++)
 		{
@@ -49,6 +50,10 @@ namespace SimpleRadio
 		position["y"] = this->position.y;
 
 		root["pos"] = position;
+
+		root["hasRadio"] = this->hasRadio;
+
+		root["groundCommander"] = this->groundCommander;
 
 		if (formatted == true)
 		{
@@ -88,6 +93,7 @@ namespace SimpleRadio
 				data.radio[i].modulation = root["radios"][i]["modulation"].asInt();
 			}
 
+
 			try {
 				data.hasRadio = root["hasRadio"].asBool();
 			}
@@ -96,6 +102,19 @@ namespace SimpleRadio
 				//catch older versions
 				data.hasRadio = true;
 			}
+
+			
+			try {
+				
+				data.groundCommander = root["groundCommander"].asBool();
+			}
+			catch (...)
+			{
+				//catch older versions
+				data.groundCommander = false;
+			}
+			
+			
 		}
 		else
 		{

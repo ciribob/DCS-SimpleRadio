@@ -3,10 +3,11 @@
 
 #include <string>
 #include "DCSPosition.h"
+#include "RadioInformation.h"
 
 namespace SimpleRadio
 {
-	struct RadioInformation
+	 struct RadioInformation
 	{
 		std::string name;
 		double frequency;
@@ -29,6 +30,7 @@ namespace SimpleRadio
 		DCSPosition position;
 		RadioInformation radio[3];
 		bool hasRadio;
+		bool groundCommander;
 	};
 };
 

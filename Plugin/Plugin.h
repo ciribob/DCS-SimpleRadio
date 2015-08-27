@@ -74,6 +74,12 @@ namespace SimpleRadio
 		bool allowNonPlayers;
 
 		bool switchToUnicast;
+
+		bool forceOn;
+
+		bool disablePlugin;
+
+		void sendUpdateToGUI();
 	
 	};
 };

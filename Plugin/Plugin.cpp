@@ -8,6 +8,7 @@
 #include "ts3_functions.h"
 #include "Plugin.h"
 #include "ClientMetaData.h"
+#include "RadioUpdate.h"
 #include "json/json.h"
 
 #include <winsock2.h>
@@ -32,7 +33,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.0.3";
+	const char* Plugin::VERSION = "1.0.6";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -46,6 +47,8 @@ namespace SimpleRadio
 		, connectedClient()
 		, allowNonPlayers(true)
 		, switchToUnicast(false)
+		, forceOn(false)
+		, disablePlugin(false)
 	{
 	}
 
@@ -130,7 +133,7 @@ namespace SimpleRadio
 		//const int MHz = 1000000;
 		char buffer[BUFFER_SIZE] = { 0 };
 
-
+		
 		try
 		{
 
@@ -154,8 +157,8 @@ namespace SimpleRadio
 
 			if (clientInfoData.lastUpdate > 5000ull)
 			{
-				RadioInformation currentRadio = clientInfoData.radio[myClientData.selected];
-				char status[128] = { 0 };
+				RadioInformation currentRadio = clientInfoData.radio[clientInfoData.selected];
+				char status[256] = { 0 };
 				const double MHZ = 1000000;
 
 				//catch divide by zero
@@ -164,16 +167,19 @@ namespace SimpleRadio
 					currentRadio.frequency = -1;
 				}
 
-				if (clientInfoData.lastUpdate > (GetTickCount64() - 5000ull))
+				
+				if (myID == clientId)
 				{
-					sprintf_s(status, 128, "Status Good: %s, is flying %s \nSelected Radio %s\nFreq (MHz): %.4f %s", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM");
-					strcat_s(buffer, BUFFER_SIZE, status);
+					sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
+
 				}
 				else
 				{
-					sprintf_s(status, 128, "Status Unknown: %s, was flying %s - Currently Unknown\nSelected Radio %s\nFreq (MHz): %.4f %s", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM");
-					strcat_s(buffer, BUFFER_SIZE, status);
+					sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s",clientInfoData.isCurrent()?"Live":"Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF");
+
 				}
+				strcat_s(buffer, BUFFER_SIZE, status);
+				
 
 			}
 			else
@@ -181,7 +187,7 @@ namespace SimpleRadio
 				strcat_s(buffer, BUFFER_SIZE, "Status: Not In Game\n");
 			}
 		}
-		catch (std::out_of_range)
+		catch (...)
 		{
 			// Client not in map, return
 			strcat_s(buffer, BUFFER_SIZE, "Status: Not In Game or Not Running Plugin\n");
@@ -204,22 +210,6 @@ namespace SimpleRadio
 	}
 
 	void Plugin::onHotKeyEvent(const char * hotkeyCommand) {
-		/*
-
-		CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select UHF AM");
-		CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select VHF AM");
-		CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select FM");
-
-		CREATE_HOTKEY("DCS-SR-FREQ-10-UP", "Frequency Up - 10MHz");
-		CREATE_HOTKEY("DCS-SR-FREQ-10-DOWN", "Frequency Down - 10MHz");
-
-		CREATE_HOTKEY("DCS-SR-FREQ-1-UP", "Frequency Up - 1MHz");
-		CREATE_HOTKEY("DCS-SR-FREQ-1-DOWN", "Frequency Down - 1MHz");
-
-		CREATE_HOTKEY("DCS-SR-FREQ-01-UP", "Frequency Up - 0.1MHz");
-		CREATE_HOTKEY("DCS-SR-FREQ-01-DOWN", "Frequency Down - 0.1MHz");
-		*/
-		//RadioInformation selectedRadio = this->teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected];
 
 		if (strcmp("DCS-SR-TOGGLE-MUTE", hotkeyCommand) == 0)
 		{
@@ -232,6 +222,36 @@ namespace SimpleRadio
 			else
 			{
 				this->teamspeak.printMessageToCurrentTab("Muting clients NOT in an aircraft");
+			}
+			return;
+
+		}
+		else if (strcmp("DCS-SR-TOGGLE-FORCE-ON", hotkeyCommand) == 0)
+		{
+			this->forceOn = !this->forceOn;
+
+			if (this->forceOn)
+			{
+				this->teamspeak.printMessageToCurrentTab("Forcing ON in Ground Mode");
+			}
+			else
+			{
+				this->teamspeak.printMessageToCurrentTab("Forcing OFF in Ground Mode");
+			}
+			return;
+
+		}
+		else if (strcmp("DCS-SR-TOGGLE-ENABLE", hotkeyCommand) == 0)
+		{
+			this->disablePlugin = !this->disablePlugin;
+
+			if (this->disablePlugin)
+			{
+				this->teamspeak.printMessageToCurrentTab("Disabling DCS-SimpleRadio");
+			}
+			else
+			{
+				this->teamspeak.printMessageToCurrentTab("Enabling DCS-SimpleRadio");
 			}
 			return;
 
@@ -327,6 +347,58 @@ namespace SimpleRadio
 
 	}
 
+	void Plugin::sendUpdateToGUI()
+	{
+		RadioUpdate update;
+
+		update.name = this->myClientData.name;
+		update.unit = this->myClientData.unit;
+		update.selected = this->myClientData.selected;
+		update.hasRadio = this->myClientData.hasRadio;
+		update.allowNonPlayers = this->allowNonPlayers;
+
+		for (int i = 0; i < 3; i++)
+		{
+			update.radios[i] = this->myClientData.radio[i];
+		}
+
+		/*
+		SEND
+		*/
+		try
+		{
+			SOCKET s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+			if (s == -1)
+			{
+				return;
+			}
+			SOCKADDR_IN serveraddr;
+			struct hostent *hostentry;
+
+
+			serveraddr.sin_family = AF_INET;
+			serveraddr.sin_port = htons(35024);
+
+			inet_pton(AF_INET, "239.255.50.10", &(serveraddr.sin_addr.s_addr));
+
+			char sbuf[1024];
+			int len = sizeof(SOCKADDR_IN);
+
+			//JSON Encode
+			sprintf(sbuf, "%s\r\n", update.serialize(false).c_str());
+
+			//teamspeak.printMessageToCurrentTab(update.serialize(false).c_str());
+
+			sendto(s, sbuf, strlen(sbuf), 0, (SOCKADDR*)&serveraddr, len);
+			::closesocket(s);
+
+		}
+		catch (...)
+		{
+
+		}
+	}
+
 	void Plugin::onClientUpdated(uint64 serverConnectionHandlerId, anyID clientId, anyID invokerId)
 	{
 
@@ -354,6 +426,9 @@ namespace SimpleRadio
 						ClientMetaData metadata = ClientMetaData::deserialize(bufferForMetaData, false);
 
 						this->myClientData = metadata;
+
+						sendUpdateToGUI();
+
 					}
 					catch (...)
 					{
@@ -696,22 +771,25 @@ namespace SimpleRadio
 							}
 						}
 
-						//TODO: modify as appropriate with locally set frequency or selected Radio
-						//if hasRadio == false then
-						//use the teamspeak settings
-						//if hasRadio == true, ignore TS 
-
 						std::string serialised = clientMetaData.serialize();
 
-						//////Send Client METADATA
-						if (this->teamspeak.setClientSelfVariableAsString(serverHandlerID, CLIENT_META_DATA, serialised.c_str()) != ERROR_ok) {
-							//printf("Error setting CLIENT_META_DATA!!!\n");
-
-						}
-						else
+						//only send if plugin is not disabled and if we're in Ground Commander mode, if the user has enabled forced on
+						if (!this->disablePlugin 
+							&& ((this->forceOn && clientMetaData.groundCommander) 
+									|| clientMetaData.groundCommander == false ))
 						{
-							this->teamspeak.flushClientSelfUpdates(serverHandlerID, NULL);
+							//////Send Client METADATA
+							if (this->teamspeak.setClientSelfVariableAsString(serverHandlerID, CLIENT_META_DATA, serialised.c_str()) != ERROR_ok) {
+								//printf("Error setting CLIENT_META_DATA!!!\n");
+
+							}
+							else
+							{
+								this->teamspeak.flushClientSelfUpdates(serverHandlerID, NULL);
+							}
 						}
+
+						
 					}
 					catch (...)
 					{
@@ -909,7 +987,7 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	/* Register hotkeys giving a keyword and a description.
 	* The keyword will be later passed to ts3plugin_onHotkeyEvent to identify which hotkey was triggered.
 	* The description is shown in the clients hotkey dialog. */
-	BEGIN_CREATE_HOTKEYS(10);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
+	BEGIN_CREATE_HOTKEYS(12);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select UHF AM");
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select VHF AM");
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select FM");
@@ -924,6 +1002,10 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	CREATE_HOTKEY("DCS-SR-FREQ-01-DOWN", "Frequency Down - 0.1MHz");
 
 	CREATE_HOTKEY("DCS-SR-TOGGLE-MUTE", "Toggle Mute on Outsiders");
+
+	CREATE_HOTKEY("DCS-SR-TOGGLE-FORCE-ON", "Toggles Radio ON/OFF for Spectating or CA");
+
+	CREATE_HOTKEY("DCS-SR-TOGGLE-ENABLE", "Toggles Plugin On/Off");
 
 	END_CREATE_HOTKEYS;
 

@@ -215,7 +215,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(TargetPath)" "$(LOCALAPPDATA)\TeamSpeak 3 Client 3.0.15\plugins" /y</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -252,6 +253,8 @@
     <ClInclude Include="public_errors.h" />
     <ClInclude Include="public_errors_rare.h" />
     <ClInclude Include="public_rare_definitions.h" />
+    <ClInclude Include="RadioInformation.h" />
+    <ClInclude Include="RadioUpdate.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ts3_functions.h" />
     <ClInclude Include="DCSPosition.h" />
@@ -262,6 +265,7 @@
     <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="DCSPosition.cpp" />
+    <ClCompile Include="RadioUpdate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Plugin.rc" />
