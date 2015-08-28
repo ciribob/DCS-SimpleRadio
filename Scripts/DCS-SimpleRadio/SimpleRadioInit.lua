@@ -31,31 +31,6 @@ SR.JSON = JSON
 UDPSendSocket = socket.udp()
 UDPSendSocket:settimeout(0)
 
- SR.frameCount = 0
-
---Radio Update Object
---RadioUpdate = {}
---RadioUpdate.__index = RadioUpdate
---
---function RadioUpdate.init(_vhf,_uhf,_fm,_current)
---    local _radio = {}
---    setmetatable(_radio,RadioUpdate)
---    _radio.vhf = _vhf
---    _radio.uhf = _uhf
---    _radio.fm = _fm
---    _radio.current = _current
---    return _radio
---end
---
---function RadioUpdate:sendUpdate()
---
---   local _msg = "VHF:"..self.vhf.."\nUHF:"..self.uhf.."\nFM"..self.fm.."\nCURRENT:"..self.current.."\n"
---
---   socket.try(UDPSendSocket:sendto(_msg, "239.255.50.10", 5050))
---end
-
-
-
 -- Prev Export functions.
 local _prevExport = {}
 _prevExport.LuaExportStart = LuaExportStart
@@ -157,7 +132,7 @@ LuaExportActivityNextEvent = function(tCurrent)
             end
 
             socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
-            socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
+           -- socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
 
         else
 
@@ -180,7 +155,7 @@ LuaExportActivityNextEvent = function(tCurrent)
             }
 
             socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
-            socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
+        --    socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
 
         end
 
@@ -198,15 +173,15 @@ end
 function SR.exportRadioUH1H(_data)
 
     _data.radios[1].name = "AN/ARC-51BX - UHF"
-    _data.radios[1].frequency = SR.round(SR.getRadioFrequency(22), 5000)
+    _data.radios[1].frequency = SR.getRadioFrequency(22)
     _data.radios[1].modulation = 0
 
     _data.radios[2].name = "AN/ARC-134"
-    _data.radios[2].frequency = SR.round(SR.getRadioFrequency(20), 5000)
+    _data.radios[2].frequency = SR.getRadioFrequency(20)
     _data.radios[2].modulation = 0
 
     _data.radios[3].name = "AN/ARC-131"
-    _data.radios[3].frequency = SR.round(SR.getRadioFrequency(23), 5000)
+    _data.radios[3].frequency = SR.getRadioFrequency(23)
     _data.radios[3].modulation = 1
 
     _data.volume = {100, 100, 100};
@@ -232,32 +207,41 @@ end
 
 function SR.exportRadioKA50(_data)
 
+    local _panel = GetDevice(0)
 
-    _data.radios[1].name = "R-828"
-    _data.radios[1].frequency = SR.round(SR.getRadioFrequency(49), 50000)
+    _data.radios[1].name = "R-800L14 VHF/UHF"
+    _data.radios[1].frequency = SR.getRadioFrequency(48)
     _data.radios[1].modulation = 0
 
-    _data.radios[2].name = "R-800L14"
-    _data.radios[2].frequency = SR.round(SR.getRadioFrequency(48), 5000)
+    -- Get modulation mode
+    local switch = _panel:get_argument_value(417)
+    if SR.nearlyEqual(switch, 0.0, 0.03) then
+        _data.radios[1].modulation = 1
+    else
+        _data.radios[1].modulation = 0
+    end
+
+    _data.radios[2].name = "R-828"
+    _data.radios[2].frequency = SR.getRadioFrequency(49,50000)
     _data.radios[2].modulation = 0
 
     _data.radios[3].name = "N/A"
     _data.radios[3].frequency = 1
-    _data.radios[3].modulation = 1
+    _data.radios[3].modulation = 0
 
     _data.volume = {100, 100, 100};
 
-    local _panel = GetDevice(0)
+
     -- Get selected radio from SPU-9
 
     local switch = _panel:get_argument_value(428)
 
     if SR.nearlyEqual(switch, 0.0, 0.03) then
-        _data.selected = 1
+        _data.selected = 0
     elseif SR.nearlyEqual(switch, 0.1, 0.03) then
-        _data.selected = 0
+        _data.selected = 1
     else
-        _data.selected = 0
+        _data.selected = 1
     end
 
     return _data
@@ -266,17 +250,16 @@ end
 
 function SR.exportRadioMI8(_data)
 
-
-    _data.radios[1].name = "R-828"
-    _data.radios[1].frequency = SR.round(SR.getRadioFrequency(39), 50000)
+    _data.radios[1].name = "R-863"
+    _data.radios[1].frequency = SR.getRadioFrequency(38)
     _data.radios[1].modulation = 0
 
-    _data.radios[2].name = "R-863"
-    _data.radios[2].frequency = SR.round(SR.getRadioFrequency(38), 5000)
+    _data.radios[2].name = "R-828"
+    _data.radios[2].frequency = SR.getRadioFrequency(39,50000)
     _data.radios[2].modulation = 0
 
     _data.radios[3].name = "JADRO-1A"
-    _data.radios[3].frequency = SR.round(SR.getRadioFrequency(37), 5000)
+    _data.radios[3].frequency = SR.getRadioFrequency(37)
     _data.radios[3].modulation = 0
 
     _data.volume = {100, 100, 100};
@@ -287,11 +270,11 @@ function SR.exportRadioMI8(_data)
     local switch = _panel:get_argument_value(550)
 
     if SR.nearlyEqual(switch, 0.0, 0.03) then
-        _data.selected = 1
+        _data.selected = 0
     elseif SR.nearlyEqual(switch, 0.1, 0.03) then
         _data.selected = 2
     elseif SR.nearlyEqual(switch, 0.2, 0.03) then
-        _data.selected = 0
+        _data.selected = 1
     else
         _data.selected = 0
     end
@@ -306,15 +289,15 @@ function SR.exportRadioA10C(_data)
 
 
     _data.radios[1].name = "AN/ARC-186(V)"
-    _data.radios[1].frequency =  SR.round(SR.getRadioFrequency(55), 5000)
+    _data.radios[1].frequency =  SR.getRadioFrequency(55)
     _data.radios[1].modulation = 0
 
     _data.radios[2].name = "AN/ARC-164"
-    _data.radios[2].frequency = SR.round(SR.getRadioFrequency(54), 5000)
+    _data.radios[2].frequency = SR.getRadioFrequency(54)
     _data.radios[2].modulation = 0
 
     _data.radios[3].name = "FM"
-    _data.radios[3].frequency =  SR.round(SR.getRadioFrequency(56), 5000)
+    _data.radios[3].frequency =  SR.getRadioFrequency(56)
     _data.radios[3].modulation = 1
 
     _data.volume = {100, 100, 100};
@@ -343,7 +326,7 @@ end
 function SR.exportRadioF86Sabre(_data)
 
     _data.radios[1].name = "AN/ARC-27"
-    _data.radios[1].frequency =  SR.round(SR.getRadioFrequency(26), 5000)
+    _data.radios[1].frequency =  SR.getRadioFrequency(26)
     _data.radios[1].modulation = 0
 
     _data.radios[2].name = "N/A"
@@ -364,7 +347,7 @@ end
 function SR.exportRadioMIG15(_data)
 
     _data.radios[1].name = "RSI-6K"
-    _data.radios[1].frequency =  SR.round(SR.getRadioFrequency(30), 5000)
+    _data.radios[1].frequency =  SR.getRadioFrequency(30)
     _data.radios[1].modulation = 0
 
     _data.radios[2].name = "N/A"
@@ -387,7 +370,7 @@ end
 function SR.exportRadioMIG21(_data)
 
     _data.radios[1].name = "R-828"
-    _data.radios[1].frequency =  SR.round(SR.getRadioFrequency(22), 5000)
+    _data.radios[1].frequency =  SR.getRadioFrequency(22)
     _data.radios[1].modulation = 0
 
     _data.radios[2].name = "N/A"
@@ -408,7 +391,7 @@ end
 function SR.exportRadioP51(_data)
 
     _data.radios[1].name = "SCR522A"
-    _data.radios[1].frequency =  SR.round(SR.getRadioFrequency(24), 5000)
+    _data.radios[1].frequency =  SR.getRadioFrequency(24)
     _data.radios[1].modulation = 0
 
     _data.radios[2].name = "N/A"
@@ -429,7 +412,7 @@ end
 function SR.exportRadioFW190(_data)
 
     _data.radios[1].name = "FuG 16ZY"
-    _data.radios[1].frequency =  SR.round(SR.getRadioFrequency(15), 5000)
+    _data.radios[1].frequency = SR.getRadioFrequency(15)
     _data.radios[1].modulation = 0
 
     _data.radios[2].name = "N/A"
@@ -450,7 +433,7 @@ end
 function SR.exportRadioBF109(_data)
 
     _data.radios[1].name = "FuG 16ZY"
-    _data.radios[1].frequency =  SR.round(SR.getRadioFrequency(14), 5000)
+    _data.radios[1].frequency =  SR.getRadioFrequency(14)
     _data.radios[1].modulation = 0
 
     _data.radios[2].name = "N/A"
@@ -479,12 +462,18 @@ function LuaExportBeforeNextFrame()
 
 end
 
-function SR.getRadioFrequency(_deviceId)
+function SR.getRadioFrequency(_deviceId, _roundTo)
     local _device = GetDevice(_deviceId)
+
+    if not _roundTo then
+        _roundTo = 5000
+    end
+
 
     if _device then
         if _device:is_on() then
-            return _device:get_frequency()
+            -- round as the numbers arent exact
+            return SR.round(_device:get_frequency(),_roundTo)
         end
     end
     return 1
