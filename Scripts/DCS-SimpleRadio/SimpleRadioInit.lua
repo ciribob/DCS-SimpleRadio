@@ -1,5 +1,8 @@
 SR = {}
 
+SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
+                    -- set unicast to true and type "/sr switch" in the TeamSpeak chat window
+
 SR.dbg = {}
 SR.logFile = io.open(lfs.writedir()..[[Logs\DCS-SimpleRadio.log]], "w")
 function SR.log(str)
@@ -131,8 +134,11 @@ LuaExportActivityNextEvent = function(tCurrent)
                 _update.selected = 1
             end
 
-            socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
-           -- socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
+            if SR.unicast then
+                socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
+            else
+                socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
+            end
 
         else
 
@@ -154,8 +160,11 @@ LuaExportActivityNextEvent = function(tCurrent)
                 groundCommander = true
             }
 
-            socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
-        --    socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
+            if SR.unicast then
+                socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
+            else
+                socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
+            end
 
         end
 

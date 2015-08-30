@@ -96,14 +96,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>DCS-SimpleRadio</TargetName>
+    <TargetName>DCS-SimpleRadio-$(Platform)</TargetName>
     <IncludePath>C:\Users\Ola\AppData\Local\TeamSpeak 3 Client 3.0.15\pluginsdk\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(ProjectDir)build\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>DCS-SimpleRadio</TargetName>
+    <TargetName>DCS-SimpleRadio-$(Platform)</TargetName>
     <IncludePath>C:\Users\Ola\AppData\Local\TeamSpeak 3 Client 3.0.15\pluginsdk\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|x64'">
@@ -122,14 +122,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>DCS-SimpleRadio</TargetName>
+    <TargetName>DCS-SimpleRadio-$(Platform)</TargetName>
     <IncludePath>C:\Users\Ola\AppData\Local\TeamSpeak 3 Client 3.0.15\pluginsdk\include;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)bin\</OutDir>
-    <IntDir>$(ProjectDir)build\</IntDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>DCS-SimpleRadio</TargetName>
+    <TargetName>DCS-SimpleRadio-$(PlatformShortName)</TargetName>
     <IncludePath>C:\Users\Ola\AppData\Local\TeamSpeak 3 Client 3.0.15\pluginsdk\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -238,7 +238,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(TargetPath)" "$(LOCALAPPDATA)\TeamSpeak 3 Client 3.0.15\plugins" /y</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

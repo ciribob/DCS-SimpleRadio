@@ -11,6 +11,7 @@
 #include "RadioUpdate.h"
 #include "json/json.h"
 
+#include <tchar.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
@@ -33,7 +34,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.0.6";
+	const char* Plugin::VERSION = "1.0.7";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -64,9 +65,59 @@ namespace SimpleRadio
 	void Plugin::start()
 	{
 		this->listening = true;
+
+		//read registry key
+		this->readSettings();
+	
+
 		this->acceptor = thread(&Plugin::UDPListener, this);
 	}
 
+	LPCWSTR Plugin::getConfigPath()
+	{
+		char configPath[512];
+		this->teamspeak.getConfigPath(configPath, 512);
+
+		string iniPath;
+		iniPath.append(configPath);
+		iniPath.append("SimpleRadio.ini");
+
+	//	this->teamspeak.printMessageToCurrentTab(iniPath.c_str());
+
+		std::wstring stemp = std::wstring(iniPath.begin(), iniPath.end());
+		LPCWSTR sw = stemp.c_str();
+		return sw;
+	}
+
+	void Plugin::readSettings()
+	{
+		int multi = GetPrivateProfileInt(_T("UDP"), _T("unicast"), 0, this->getConfigPath());
+
+		if (multi == 1)
+		{
+			this->switchToUnicast = true;
+		}
+		else
+		{
+			this->switchToUnicast = false;
+		}
+	}
+
+	void Plugin::writeSettings(bool unicast)
+	{
+		if (unicast == 1)
+		{
+			WritePrivateProfileString(_T("UDP"), _T("unicast"), _T("1"), this->getConfigPath());
+		}
+		else
+		{
+			WritePrivateProfileString(_T("UDP"), _T("unicast"), _T("0"), this->getConfigPath());
+		}
+
+		//refresh after writing
+		this->readSettings();
+
+	}
 
 	void Plugin::stop()
 	{
@@ -104,13 +155,13 @@ namespace SimpleRadio
 		{
 			if (this->switchToUnicast)
 			{
-				this->switchToUnicast = false;
+				this->writeSettings(false);
 
 				this->teamspeak.printMessageToCurrentTab("Switching to Multicast");
 			}
 			else
 			{
-				this->switchToUnicast = true;
+				this->writeSettings(true);
 				this->teamspeak.printMessageToCurrentTab("Switching to Unicast");
 			}
 
@@ -119,6 +170,7 @@ namespace SimpleRadio
 			this->start();
 
 			this->teamspeak.printMessageToCurrentTab("Switched");
+		//	this->teamspeak.printMessageToCurrentTab(this->getConfigPath());
 
 			return true;
 		}
@@ -132,7 +184,6 @@ namespace SimpleRadio
 		const size_t BUFFER_SIZE = 256;
 		//const int MHz = 1000000;
 		char buffer[BUFFER_SIZE] = { 0 };
-
 		
 		try
 		{
@@ -673,11 +724,11 @@ namespace SimpleRadio
 		// Initialize Winsock version 2.2
 		if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 		{
-			printf("Server: WSAStartup failed with error %ld\n", WSAGetLastError());
+			this->teamspeak.logMessage("WSAStartup failed with error", LogLevel_ERROR, Plugin::NAME, 0);
+		//	printf("Server: WSAStartup failed with error %ld\n", WSAGetLastError());
 
 		}
-		else
-			printf("Server: The Winsock DLL status is %s.\n", wsaData.szSystemStatus);
+	
 
 		struct sockaddr_in addr;
 
@@ -707,7 +758,8 @@ namespace SimpleRadio
 			//mreq.imr_multiaddr.s_addr = inet_addr("239.255.50.10");
 			mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 			if (setsockopt(ReceivingSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
-				printf("Error configuring ADD MEMBERSHIO");
+			//	printf("Error configuring ADD MEMBERSHIP");
+				this->teamspeak.logMessage("Error adding membership for Multicast - Check firewall!", LogLevel_ERROR, Plugin::NAME, 0);
 
 			}
 		}
@@ -747,7 +799,7 @@ namespace SimpleRadio
 								//init selected
 								this->teamSpeakControlledClientData.selected = clientMetaData.selected;
 
-								this->teamspeak.printMessageToCurrentTab("Copied Everything");
+							//	this->teamspeak.printMessageToCurrentTab("Copied Everything");
 							}
 
 							//overwrite received metadata and resend modified to avoid race conditions we use update our own metadata
@@ -806,16 +858,19 @@ namespace SimpleRadio
 		// When your application is finished receiving datagrams close the socket.
 		//printf("Server: Finished receiving. Closing the listening socket...\n");
 		if (closesocket(ReceivingSocket) != 0)
-			printf("Server: closesocket() failed! Error code: %ld\n", WSAGetLastError());
-		else
-			printf("Server: closesocket() is OK...\n");
+		{
+			this->teamspeak.logMessage("Closesocket failed!", LogLevel_ERROR, Plugin::NAME, 0);
+		}
+			//printf("Server: closesocket() failed! Error code: %ld\n", WSAGetLastError());
+		
 
 		// When your application is finished call WSACleanup.
 		//printf("Server: Cleaning up...\n");
 		if (WSACleanup() != 0)
-			printf("Server: WSACleanup() failed! Error code: %ld\n", WSAGetLastError());
-		else
-			printf("Server: WSACleanup() is OK\n");
+		{ 
+			//printf("Server: WSACleanup() failed! Error code: %ld\n", WSAGetLastError());
+			this->teamspeak.logMessage(" WSACleanup() failed!", LogLevel_ERROR, Plugin::NAME, 0);
+		}
 		// Back to the system
 	}
 

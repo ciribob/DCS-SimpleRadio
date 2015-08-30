@@ -31,6 +31,9 @@ namespace SimpleRadio
 		~Plugin();
 
 		void start();
+		LPCWSTR getConfigPath();
+		void readSettings();
+		void writeSettings(bool unicast);
 		void stop();
 
 		void setTeamSpeakFunctions(TS3Functions functions);
