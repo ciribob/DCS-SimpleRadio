@@ -34,7 +34,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.0.7";
+	const char* Plugin::VERSION = "1.0.8";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -208,6 +208,25 @@ namespace SimpleRadio
 
 			if (clientInfoData.lastUpdate > 5000ull)
 			{
+				//no radio
+				if (clientInfoData.selected < 0)
+				{
+					char status[256] = { 0 };
+					if (myID == clientId)
+					{
+						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio: None\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
+					}
+					else
+					{
+						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio: None\nCA Mode:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(),clientInfoData.groundCommander ? "ON" : "OFF");
+
+					}
+					strcat_s(buffer, BUFFER_SIZE, status);
+
+					return buffer;
+
+				}
+
 				RadioInformation currentRadio = clientInfoData.radio[clientInfoData.selected];
 				char status[256] = { 0 };
 				const double MHZ = 1000000;
@@ -308,6 +327,12 @@ namespace SimpleRadio
 
 		}
 
+		if (teamSpeakControlledClientData.selected < 0)
+		{
+			//ignore as no radio
+			return;
+		}
+
 
 		RadioInformation &selectedRadio = this->teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected];
 
@@ -393,6 +418,30 @@ namespace SimpleRadio
 			sprintf_s(buffer, 256, "Selected FM -  Current Freq (MHz): %.4f", teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected].frequency / MHZ);
 
 			this->teamspeak.printMessageToCurrentTab(buffer);
+		}
+		else if (strcmp("DCS-SR-VOLUME-10-UP", hotkeyCommand) == 0)
+		{
+
+			selectedRadio.volume = selectedRadio.volume + 0.1;
+
+			if (selectedRadio.volume > 1.0)
+			{
+				selectedRadio.volume = 1.0;
+			}
+
+			this->teamspeak.printMessageToCurrentTab("Volume Up");
+		}
+		else if (strcmp("DCS-SR-VOLUME-10-DOWN", hotkeyCommand) == 0)
+		{
+			
+			selectedRadio.volume = selectedRadio.volume - 0.1;
+
+			if (selectedRadio.volume < 0.0)
+			{
+				selectedRadio.volume = 0;
+			}
+
+			this->teamspeak.printMessageToCurrentTab("Volume Down");
 		}
 		
 
@@ -538,6 +587,7 @@ namespace SimpleRadio
 	{
 		//can receive?
 		bool canReceive = false;
+		int recievingRadio = -1;
 
 		ClientMetaData talkingClient;
 		try
@@ -617,6 +667,7 @@ namespace SimpleRadio
 						//{
 							//not talking on the same radio as we're receving on
 						canReceive = true;
+						recievingRadio = i;
 						break;
 						//}
 					}
@@ -665,6 +716,18 @@ namespace SimpleRadio
 			{
 			samples[i] = samples[i] * 0;
 			}*/
+		}
+		else if(recievingRadio >= 0) //we are recieving on a radio so mess with the volumes
+		{
+			RadioInformation myRadio = this->myClientData.radio[recievingRadio];
+
+			//do volume control
+			for (int i = 0; i < sampleCount; i++)
+			{
+				for (int j = 0; j < channels; j++)
+
+					samples[i * channels + j] = samples[i * channels + j] * (myRadio.volume );
+			}
 		}
 
 
@@ -794,6 +857,7 @@ namespace SimpleRadio
 								{
 									//reset all the radios
 									this->teamSpeakControlledClientData.radio[i].frequency = clientMetaData.radio[i].frequency;
+									this->teamSpeakControlledClientData.radio[i].volume = clientMetaData.radio[i].volume;
 								}
 
 								//init selected
@@ -802,12 +866,13 @@ namespace SimpleRadio
 							//	this->teamspeak.printMessageToCurrentTab("Copied Everything");
 							}
 
-							//overwrite received metadata and resend modified to avoid race conditions we use update our own metadata
+							//overwrite received metadata and resend modified to avoid race conditions if we use update our own metadata
 
 							for (int i = 0; i < 3; i++)
 							{
 								//overwrite current radio frequencies
 								clientMetaData.radio[i].frequency = this->teamSpeakControlledClientData.radio[i].frequency;
+								clientMetaData.radio[i].volume = this->teamSpeakControlledClientData.radio[i].volume;
 							}
 
 							//overrwrite selected
@@ -820,6 +885,7 @@ namespace SimpleRadio
 							{
 								//reset all the radios
 								this->teamSpeakControlledClientData.radio[i].frequency = -1;
+								this->teamSpeakControlledClientData.radio[i].volume = 1.0;
 							}
 						}
 
@@ -1042,7 +1108,7 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	/* Register hotkeys giving a keyword and a description.
 	* The keyword will be later passed to ts3plugin_onHotkeyEvent to identify which hotkey was triggered.
 	* The description is shown in the clients hotkey dialog. */
-	BEGIN_CREATE_HOTKEYS(12);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
+	BEGIN_CREATE_HOTKEYS(14);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select UHF AM");
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select VHF AM");
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select FM");
@@ -1061,6 +1127,9 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	CREATE_HOTKEY("DCS-SR-TOGGLE-FORCE-ON", "Toggles Radio ON/OFF for Spectating or CA");
 
 	CREATE_HOTKEY("DCS-SR-TOGGLE-ENABLE", "Toggles Plugin On/Off");
+
+	CREATE_HOTKEY("DCS-SR-VOLUME-10-UP", "VOLUME Up - 10%");
+	CREATE_HOTKEY("DCS-SR-VOLUME-10-DOWN", "VOLUME Down - 10%");
 
 	END_CREATE_HOTKEYS;
 

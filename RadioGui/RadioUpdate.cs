@@ -11,6 +11,7 @@ namespace RadioGui
        public  string name;
         public double frequency;
         public int modulation;
+        public float volume;
      
     };
     class RadioUpdate

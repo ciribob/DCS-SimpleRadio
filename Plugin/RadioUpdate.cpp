@@ -19,6 +19,7 @@ namespace SimpleRadio
 			this->radios[i].name = "No Radio";
 			this->radios[i].frequency = -1;
 			this->radios[i].modulation = 0;
+			this->radios[i].volume = 1.0;
 		}
 	}
 
@@ -39,6 +40,7 @@ namespace SimpleRadio
 			current["name"] = this->radios[i].name;
 			current["frequency"] = this->radios[i].frequency;
 			current["modulation"] = this->radios[i].modulation;
+			current["volume"] = this->radios[i].volume;
 			array.append(current);
 		}
 

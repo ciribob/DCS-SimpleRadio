@@ -148,18 +148,27 @@ namespace RadioGui
                                     radio2Active.Fill = new SolidColorBrush(Colors.Orange);
                                     radio3Active.Fill = new SolidColorBrush(Colors.Green);
                                     break;
+                                default:
+                                    radio1Active.Fill = new SolidColorBrush(Colors.Orange);
+                                    radio2Active.Fill = new SolidColorBrush(Colors.Orange);
+                                    radio3Active.Fill = new SolidColorBrush(Colors.Orange);
+                                    break;
+
                             }
 
                            
 
                             radio1Frequency.Text = (lastUpdate.radios[0].frequency/MHZ).ToString("0.000") + (lastUpdate.radios[0].modulation==0?"AM":"FM");
                             radio1Label.Content = lastUpdate.radios[0].name;
+                            radio1Volume.Value = (lastUpdate.radios[0].volume*100.0);
 
                             radio2Frequency.Text = (lastUpdate.radios[1].frequency / MHZ).ToString("0.000") + (lastUpdate.radios[1].modulation == 0 ? "AM" : "FM");
                             radio2Label.Content = lastUpdate.radios[1].name;
+                            radio2Volume.Value = (lastUpdate.radios[1].volume * 100.0);
 
                             radio3Frequency.Text = (lastUpdate.radios[2].frequency / MHZ).ToString("0.000") + (lastUpdate.radios[2].modulation == 0 ? "AM" : "FM");
                             radio3Label.Content = lastUpdate.radios[2].name;
+                            radio3Volume.Value = (lastUpdate.radios[2].volume * 100.0);
 
                         }));
                     }
@@ -181,11 +190,10 @@ namespace RadioGui
 
         }
 
-    
-
         ~MainWindow()
         {
             //Shut down threads
+            this.end = true;
         }
 
     }
