@@ -9,6 +9,7 @@
 #include "Plugin.h"
 #include "ClientMetaData.h"
 #include "RadioUpdate.h"
+#include "RadioUpdateCommand.h"
 #include "json/json.h"
 
 #include <tchar.h>
@@ -34,7 +35,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.0.8";
+	const char* Plugin::VERSION = "1.0.9";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -69,8 +70,9 @@ namespace SimpleRadio
 		//read registry key
 		this->readSettings();
 	
-
 		this->acceptor = thread(&Plugin::UDPListener, this);
+
+		this->udpCommandListener = thread(&Plugin::UDPCommandListener, this);
 	}
 
 	LPCWSTR Plugin::getConfigPath()
@@ -127,6 +129,11 @@ namespace SimpleRadio
 		if (this->acceptor.joinable())
 		{
 			this->acceptor.join();
+		}
+
+		if (this->udpCommandListener.joinable())
+		{
+			this->udpCommandListener.join();
 		}
 	}
 
@@ -776,8 +783,7 @@ namespace SimpleRadio
 
 		SOCKADDR_IN        SenderAddr;
 		int                SenderAddrSize = sizeof(SenderAddr);
-		int                ByteReceived = 5;
-		char ch = 'Y';
+		int                ByteReceived = 0;
 
 		char          ReceiveBuf[768]; //maximum UDP Packet Size
 		int           BufLength = 768;
@@ -934,6 +940,108 @@ namespace SimpleRadio
 		//printf("Server: Cleaning up...\n");
 		if (WSACleanup() != 0)
 		{ 
+			//printf("Server: WSACleanup() failed! Error code: %ld\n", WSAGetLastError());
+			this->teamspeak.logMessage(" WSACleanup() failed!", LogLevel_ERROR, Plugin::NAME, 0);
+		}
+		// Back to the system
+	}
+
+	void Plugin::UDPCommandListener()
+	{
+		WSADATA            wsaData;
+		SOCKET             ReceivingSocket;
+
+		SOCKADDR_IN        SenderAddr;
+		int                SenderAddrSize = sizeof(SenderAddr);
+		int                ByteReceived = 0;
+		
+		char          ReceiveBuf[768]; //maximum UDP Packet Size
+		int           BufLength = 768;
+
+		struct ip_mreq mreq;
+
+		// Initialize Winsock version 2.2
+		if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+		{
+			this->teamspeak.logMessage("WSAStartup failed with error", LogLevel_ERROR, Plugin::NAME, 0);
+		}
+
+		struct sockaddr_in addr;
+
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(5060);
+		addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+		ReceivingSocket = mksocket(&addr);
+
+		/* use setsockopt() to request that the kernel join a multicast group */
+
+		if (this->switchToUnicast == false)
+		{
+			// store this IP address in sa:
+			inet_pton(AF_INET, "239.255.50.10", &(mreq.imr_multiaddr.s_addr));
+
+			mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+			if (setsockopt(ReceivingSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
+				this->teamspeak.logMessage("Error adding membership for Multicast - Check firewall!", LogLevel_ERROR, Plugin::NAME, 0);
+
+			}
+		}
+
+		while (this->listening)
+		{
+
+			if (recvfromTimeOutUDP(ReceivingSocket, 2, 0) > 0)
+			{
+
+				ByteReceived = recvfrom(ReceivingSocket, ReceiveBuf, BufLength,
+					0, (SOCKADDR *)&SenderAddr, &SenderAddrSize);
+				if (ByteReceived > 0)
+				{
+					try
+					{
+						ReceiveBuf[ByteReceived - 1] = 0; //add terminator
+
+						//only allow on FC3 aircraft
+						if (this->myClientData.hasRadio == false)
+						{
+							RadioUpdateCommand updateCommand = RadioUpdateCommand::deserialize(ReceiveBuf);
+
+							if (updateCommand.radio >= 0)
+							{
+								//reset all the radios
+								this->teamSpeakControlledClientData.radio[updateCommand.radio].frequency += updateCommand.freq;
+							}
+						}
+
+					
+						
+					}
+					catch (...)
+					{
+						//ERROR!?
+					}
+
+					memset(&ReceiveBuf[0], 0, sizeof(ReceiveBuf));
+				}
+
+			}
+		}
+
+
+		// When your application is finished receiving datagrams close the socket.
+		//printf("Server: Finished receiving. Closing the listening socket...\n");
+		if (closesocket(ReceivingSocket) != 0)
+		{
+			this->teamspeak.logMessage("Closesocket failed!", LogLevel_ERROR, Plugin::NAME, 0);
+		}
+		//printf("Server: closesocket() failed! Error code: %ld\n", WSAGetLastError());
+
+
+		// When your application is finished call WSACleanup.
+		//printf("Server: Cleaning up...\n");
+		if (WSACleanup() != 0)
+		{
 			//printf("Server: WSACleanup() failed! Error code: %ld\n", WSAGetLastError());
 			this->teamspeak.logMessage(" WSACleanup() failed!", LogLevel_ERROR, Plugin::NAME, 0);
 		}

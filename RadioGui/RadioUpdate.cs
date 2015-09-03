@@ -8,24 +8,24 @@ namespace RadioGui
 {
     class RadioInformation
     {
-       public  string name;
-        public double frequency;
-        public int modulation;
-        public float volume;
+       public  string name = "";
+        public double frequency = 1;
+        public int modulation = 0;
+        public float volume = 1.0f;
      
     };
     class RadioUpdate
     {
 
 
-        public long  lastUpdate;
-        public string name;
-        public string unit;
-        public int selected;
+        public long  lastUpdate = 0;
+        public string name = "";
+        public string unit = "";
+        public int selected = 0;
     
         public RadioInformation[] radios = new RadioInformation[3];
-        public bool hasRadio;
-        public bool allowNonPlayers;
+        public bool hasRadio = false;
+        public bool allowNonPlayers = true;
 
     };
 }

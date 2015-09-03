@@ -7,35 +7,21 @@
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
         Topmost="True"
-       
-        Title="DCS-SimpleRadio" Height="290" Width="120">
+        
+    
+        Title="DCS-SimpleRadio" Height="325" Width="120">
 
     <WrapPanel>
-        <Label x:Name="radio1Label" Content="No Radio" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="110" Margin="2"/>
-        <TextBlock x:Name="radio1Frequency" HorizontalAlignment="Center"  TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"
-        	Margin="2"
-        	Background="Black" Foreground="Orange" Text="000.00AM"/>
-        <Ellipse  x:Name="radio1Active" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" />
 
-        <Slider x:Name="radio1Volume" Width="110" Margin="2"  Maximum="100" IsEnabled="False" />
+        <local:RadioControlGroup x:Name="radio1" />
 
-        <Label x:Name="radio2Label" Content="No Radio" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="110" Margin="2"/>
+        <local:RadioControlGroup x:Name="radio2"/>
 
-        <TextBlock x:Name="radio2Frequency" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"
-        		Margin="2"
-        	Background="Black" Foreground="Orange"><Run Text="000.00"/><Run Text="AM"/></TextBlock>
-        <Ellipse  x:Name="radio2Active" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" />
+        <local:RadioControlGroup x:Name="radio3"/>
 
-        <Slider x:Name="radio2Volume" Width="110" Margin="2" Maximum="100" IsEnabled="False"/>
 
-        <Label x:Name="radio3Label" Content="No Radio" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="110" Margin="2"/>
 
-        <TextBlock x:Name="radio3Frequency" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"
-        	Margin="2"
-        	Background="Black" Foreground="Orange"><Run Text="000.00"/><Run Text="AM"/></TextBlock>
-        <Ellipse  x:Name="radio3Active" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" />
-
-        <Slider x:Name="radio3Volume" Width="110" Margin="2"  Maximum="100" IsEnabled="False"/>
+     
 
         <Ellipse  x:Name="statusIndicator" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" />
         <Label x:Name="statusLabel" Content="Not in Game" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="90" Margin="2" Height="20" Padding="2"/>

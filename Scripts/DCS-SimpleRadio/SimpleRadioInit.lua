@@ -62,7 +62,7 @@ LuaExportStop = function()
 end
 
 LuaExportActivityNextEvent = function(tCurrent)
-    local tNext = tCurrent + 0.5
+    local tNext = tCurrent + 0.35
 
     local _status,_result = pcall(function()
         

@@ -206,6 +206,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PLUGIN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)DSPFilters\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -256,6 +257,7 @@
     <ClInclude Include="public_rare_definitions.h" />
     <ClInclude Include="RadioInformation.h" />
     <ClInclude Include="RadioUpdate.h" />
+    <ClInclude Include="RadioUpdateCommand.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ts3_functions.h" />
     <ClInclude Include="DCSPosition.h" />
@@ -267,6 +269,7 @@
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="DCSPosition.cpp" />
     <ClCompile Include="RadioUpdate.cpp" />
+    <ClCompile Include="RadioUpdateCommand.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Plugin.rc" />

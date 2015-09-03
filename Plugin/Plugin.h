@@ -68,11 +68,15 @@ namespace SimpleRadio
 		SOCKET mksocket(struct sockaddr_in *addr);
 
 		void UDPListener();
+
+		void UDPCommandListener();
 		
 		volatile bool debug;
 
 		volatile bool listening;
 		std::thread acceptor;
+
+		std::thread udpCommandListener;
 
 		bool allowNonPlayers;
 

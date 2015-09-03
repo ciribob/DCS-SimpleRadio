@@ -63,6 +63,9 @@
     <ClInclude Include="RadioInformation.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="RadioUpdateCommand.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Plugin.cpp">
@@ -81,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RadioUpdate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RadioUpdateCommand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

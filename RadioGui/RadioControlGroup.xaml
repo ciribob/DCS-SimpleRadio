@@ -1,0 +1,28 @@
+﻿<UserControl x:Class="RadioGui.RadioControlGroup"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RadioGui"
+          
+              Width="120" Height="80"
+             >
+    <WrapPanel>
+
+        <Label x:Name="radioLabel" Content="No Radio" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="110" Margin="2"/>
+        <Button HorizontalAlignment="Center" x:Name="up10" Content="" Width="10" Height="10" Margin="25,0,0,0" ToolTip="+10MHz" Click="up10_Click"/>
+        <Button HorizontalAlignment="Center" x:Name="up1" Content="" Width="10" Height="10" ToolTip="+1MHZ" Click="up1_Click"/>
+        <Button HorizontalAlignment="Center" x:Name="up01" Content="" Width="10" Height="10" Margin="0,0,0,0" ToolTip="+0.1MHz" Click="up01_Click"/>
+
+        <TextBlock x:Name="radioFrequency" HorizontalAlignment="Center"  TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"
+        	Margin="2"
+        	Background="Black" Foreground="Orange" Text="000.00AM"/>
+        <Ellipse  x:Name="radioActive" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" />
+
+        <Button HorizontalAlignment="Center" x:Name="down10" Content="" Width="10" Height="10" Margin="25,0,0,0" ToolTip="-10MHZ" Click="down10_Click"/>
+        <Button HorizontalAlignment="Center" x:Name="down1" Content="" Width="10" Height="10" ToolTip="-1MHz" Click="down1_Click"/>
+        <Button HorizontalAlignment="Center" x:Name="down01" Content="" Width="10" Height="10" Margin="0,0,0,0" ToolTip="-0.1MHz" Click="down01_Click"/>
+        <Slider x:Name="radioVolume" Width="110" Margin="2"  Maximum="100" IsEnabled="False" Height="10" />
+       
+    </WrapPanel>
+</UserControl>
