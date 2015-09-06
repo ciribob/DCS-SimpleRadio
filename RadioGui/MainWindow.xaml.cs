@@ -41,6 +41,8 @@ namespace RadioGui
            
             InitializeComponent();
 
+            //allows click and drag anywhere on the window
+            this.containerPanel.MouseLeftButtonDown += WrapPanel_MouseLeftButtonDown;
 
             radio1.radioId = 0;
             radio1.radioFrequency.Text = "Unknown";
@@ -185,6 +187,13 @@ namespace RadioGui
             });
 
         }
+
+        private void WrapPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            DragMove();
+        }
+
+
 
         protected override void OnClosing(CancelEventArgs e)
         {

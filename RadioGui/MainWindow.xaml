@@ -11,7 +11,7 @@
     
         Title="DCS-SimpleRadio" Height="325" Width="120">
 
-    <WrapPanel>
+    <WrapPanel Name="containerPanel">
 
         <local:RadioControlGroup x:Name="radio1" />
 

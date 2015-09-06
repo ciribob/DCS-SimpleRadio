@@ -62,7 +62,7 @@ LuaExportStop = function()
 end
 
 LuaExportActivityNextEvent = function(tCurrent)
-    local tNext = tCurrent + 0.35
+    local tNext = tCurrent + 0.5
 
     local _status,_result = pcall(function()
         
@@ -215,7 +215,7 @@ function SR.exportRadioUH1H(_data)
     elseif SR.nearlyEqual(switch, 0.4, 0.03) then
         _data.selected = 1
     else
-        _data.selected = 0
+        _data.selected = -1
     end
 
     return _data
@@ -259,7 +259,7 @@ function SR.exportRadioKA50(_data)
     elseif SR.nearlyEqual(switch, 0.1, 0.03) then
         _data.selected = 1
     else
-        _data.selected = 1
+        _data.selected = -1
     end
 
     return _data
@@ -295,7 +295,7 @@ function SR.exportRadioMI8(_data)
     elseif SR.nearlyEqual(switch, 0.2, 0.03) then
         _data.selected = 1
     else
-        _data.selected = 0
+        _data.selected = -1
     end
 
     return _data
@@ -310,7 +310,8 @@ function SR.exportRadioA10C(_data)
     _data.radios[1].name = "AN/ARC-186(V)"
     _data.radios[1].frequency =  SR.getRadioFrequency(55)
     _data.radios[1].modulation = 0
-    _data.radios[1].volume = SR.getRadioVolume(0, 147,{0.0,1.0},false)
+    _data.radios[1].volume = SR.getRadioVolume(0, 133,{0.0,1.0},false)
+
 
     _data.radios[2].name = "AN/ARC-164"
     _data.radios[2].frequency = SR.getRadioFrequency(54)
@@ -320,10 +321,8 @@ function SR.exportRadioA10C(_data)
     _data.radios[3].name = "FM"
     _data.radios[3].frequency =  SR.getRadioFrequency(56)
     _data.radios[3].modulation = 1
-    _data.radios[3].volume = SR.getRadioVolume(0, 133,{0.0,1.0},false)
+    _data.radios[3].volume = SR.getRadioVolume(0, 147,{0.0,1.0},false)
 
-   
-    _data.selected = 0
 
     local value = GetDevice(0):get_argument_value(239)
 
@@ -337,7 +336,10 @@ function SR.exportRadioA10C(_data)
         _data.selected = 0
     elseif  n == 1 then
         _data.selected = 1
+    else
+        _data.selected = -1
     end
+
 
     return _data
 end
