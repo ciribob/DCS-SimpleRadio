@@ -6,7 +6,7 @@ I decided to build this after playing with TARS, and wanted to be able to use mo
 
 If you want to compile or modify it, feel free and the project was built using Visual Studio 2015 - Community Edition.
 
-Thanks to TownSim, Creator of ARIES, [FSF] Ian for DCS-Bios and this GitHub Project (https://github.com/olanykvist/mars) which does a similar thing to this project. 
+Thanks to Towsim, Creator of ARIES, [FSF] Ian for DCS-Bios and this GitHub Project (https://github.com/olanykvist/mars) which does a similar thing to this project. 
 
 # Features
   - Full radio integration with all clickable cockpit aircraft (except Hawk & C-101)
