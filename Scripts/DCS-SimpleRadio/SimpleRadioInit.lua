@@ -279,7 +279,7 @@ function SR.exportRadioMI8(_data)
     _data.radios[3].name = "JADRO-1A"
     _data.radios[3].frequency = SR.getRadioFrequency(37)
     _data.radios[3].modulation = 0
-    _data.radios[3].volume = SR.getRadioVolume(0, 743,{0.0,1.0},false)
+    _data.radios[3].volume = SR.getRadioVolume(0, 743,{0.0,1.0},false,500)
 
     local _panel = GetDevice(0)
     -- Get selected radio from SPU-9

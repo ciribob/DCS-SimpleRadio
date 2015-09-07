@@ -169,6 +169,8 @@ namespace SimpleRadio
 			return false;
 		}
 
+		return true;
+
 	}
 
 }
