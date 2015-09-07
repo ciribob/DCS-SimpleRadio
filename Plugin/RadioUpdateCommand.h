@@ -4,14 +4,14 @@ namespace SimpleRadio
 {
 	class RadioUpdateCommand
 	{
-		public:
+	public:
 
-			double freq;
-			int radio;
-			 
-			RadioUpdateCommand();
-			~RadioUpdateCommand();
+		double freq;
+		int radio;
 
-			static const RadioUpdateCommand deserialize(const std::string& document);
+		RadioUpdateCommand();
+		~RadioUpdateCommand();
+
+		static const RadioUpdateCommand deserialize(const std::string& document);
 	};
 }

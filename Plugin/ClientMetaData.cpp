@@ -13,7 +13,6 @@ namespace SimpleRadio
 		, name("init")
 		, unit("init")
 		, selected(0)
-		, position()
 		, hasRadio(true)
 		, groundCommander(false)
 	{
@@ -47,12 +46,6 @@ namespace SimpleRadio
 
 		root["radios"] = array;
 
-		Json::Value position;
-		position["x"] = this->position.x;
-		position["y"] = this->position.y;
-
-		root["pos"] = position;
-
 		root["hasRadio"] = this->hasRadio;
 
 		root["groundCommander"] = this->groundCommander;
@@ -74,19 +67,15 @@ namespace SimpleRadio
 		ClientMetaData data;
 		Json::Reader reader;
 		Json::Value root;
-		
+
 		bool success = reader.parse(document, root, false);
 		if (success == true)
 		{
 			data.lastUpdate = GetTickCount64();
-			
+
 			data.name = root["name"].asString();
 			data.unit = root["unit"].asString();
-			//data.unit =  "TODO";
 			data.selected = root["selected"].asInt();
-
-			data.position.x = root["pos"]["x"].asFloat();
-			data.position.y = root["pos"]["y"].asFloat();
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -106,9 +95,9 @@ namespace SimpleRadio
 				data.hasRadio = true;
 			}
 
-			
+
 			try {
-				
+
 				data.groundCommander = root["groundCommander"].asBool();
 			}
 			catch (...)
@@ -116,8 +105,8 @@ namespace SimpleRadio
 				//catch older versions
 				data.groundCommander = false;
 			}
-			
-			
+
+
 		}
 		else
 		{
@@ -133,6 +122,53 @@ namespace SimpleRadio
 	bool ClientMetaData::isCurrent()
 	{
 		return this->lastUpdate > (GetTickCount64() - 5000ULL);
+	}
+
+	bool ClientMetaData::isEqual(ClientMetaData &data)
+	{
+
+		for (int i = 0; i < 3; i++)
+		{
+			if (this->radio[i].name.compare(data.radio[i].name) != 0)
+			{
+				return false;
+			}
+			if (this->radio[i].frequency != data.radio[i].frequency)
+			{
+				return false;
+			}
+			if (this->radio[i].modulation != data.radio[i].modulation)
+			{
+				return false;
+			}
+			if (this->radio[i].volume != data.radio[i].volume)
+			{
+				return false;
+			}
+
+		}
+
+		if (this->groundCommander != data.groundCommander)
+		{
+			return false;
+		}
+		if (this->hasRadio != data.hasRadio)
+		{
+			return false;
+		}
+		if (this->name.compare(data.name) != 0)
+		{
+			return false;
+		}
+		if (this->unit.compare(data.unit) != 0)
+		{
+			return false;
+		}
+		if (this->selected != data.selected)
+		{
+			return false;
+		}
+
 	}
 
 }

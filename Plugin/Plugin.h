@@ -9,7 +9,6 @@
 
 #include <WinSock2.h>
 #include <string>
-#include <vector>
 #include <map>
 #include <thread>
 #include "ClientMetaData.h"
@@ -27,6 +26,11 @@ namespace SimpleRadio
 		static const char* COMMAND_KEYWORD;
 		static const int   API_VERSION;
 
+		//connected server
+		uint64 serverHandlerID = 1;
+
+		TS3Functions teamspeak;
+
 		Plugin();
 		~Plugin();
 
@@ -42,18 +46,13 @@ namespace SimpleRadio
 
 		std::string getClientInfoData(uint64 serverConnectionHandlerId, uint64 clientId) const;
 		std::string getClientMetaData(uint64 serverConnectionHandlerId, uint64 clientId) const;
-		
+
 		void onClientUpdated(uint64 serverConnectionHandlerId, anyID clientId, anyID invokerId);
 		void onHotKeyEvent(const char * hotkeyCommand);
 
 		void onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerId, anyID clientId, short* samples, int sampleCount, int channels);
 
 		static void processMessage(const char* message);
-
-		//connected server
-		uint64 serverHandlerID = 1;
-
-		TS3Functions teamspeak;
 
 	private:
 		char* pluginId;
@@ -62,18 +61,11 @@ namespace SimpleRadio
 		ClientMetaData teamSpeakControlledClientData; //contains override frequencies if FC3
 
 		std::map<anyID, ClientMetaData> connectedClient;
-		ULONGLONG lastMessageTime;
 
-		int recvfromTimeOutUDP(SOCKET socket, long sec, long usec);
-		SOCKET mksocket(struct sockaddr_in *addr);
-
-		void UDPListener();
-
-		void UDPCommandListener();
-		
 		volatile bool debug;
 
 		volatile bool listening;
+
 		std::thread acceptor;
 
 		std::thread udpCommandListener;
@@ -86,8 +78,20 @@ namespace SimpleRadio
 
 		bool disablePlugin;
 
+		int recvfromTimeOutUDP(SOCKET socket, long sec, long usec);
+		
+		SOCKET mksocket(struct sockaddr_in *addr);
+
+		void UDPListener();
+
+		bool shouldSendUpdate(ClientMetaData & clientMetaData);
+
+		void processUDPUpdate(ClientMetaData & clientMetaData);
+
+		void UDPCommandListener();
+		
 		void sendUpdateToGUI();
-	
+
 	};
 };
 

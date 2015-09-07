@@ -62,7 +62,7 @@ LuaExportStop = function()
 end
 
 LuaExportActivityNextEvent = function(tCurrent)
-    local tNext = tCurrent + 0.5
+    local tNext = tCurrent + 0.3
 
     local _status,_result = pcall(function()
         
@@ -70,7 +70,6 @@ LuaExportActivityNextEvent = function(tCurrent)
         {
             name = "",
             unit = "",
-            pos = {x = 0, y = 0},
             selected = -1,
 
             radios =
@@ -90,8 +89,8 @@ LuaExportActivityNextEvent = function(tCurrent)
 
             _update.name =  _data.UnitName
             _update.unit = _data.Name
-            _update.pos.x = _data.Position.x
-            _update.pos.y = _data.Position.z
+--            _update.pos.x = _data.Position.x
+--            _update.pos.y = _data.Position.z
 
             if _update.unit == "UH-1H" then
                 _update = SR.exportRadioUH1H(_update)
@@ -149,7 +148,6 @@ LuaExportActivityNextEvent = function(tCurrent)
             {
                 name = "Unknown",
                 unit = "CA",
-                pos = {x = 1, y = 1},
                 selected = 0,
                 radios =
                 {

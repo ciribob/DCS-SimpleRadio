@@ -2,19 +2,10 @@
 #define SR_CLIENTMETADATA_H
 
 #include <string>
-#include "DCSPosition.h"
 #include "RadioInformation.h"
 
 namespace SimpleRadio
 {
-	 struct RadioInformation
-	{
-		std::string name;
-		double frequency;
-		int modulation;
-		float volume;
-	};
-
 	class ClientMetaData
 	{
 	public:
@@ -23,11 +14,12 @@ namespace SimpleRadio
 		static const ClientMetaData deserialize(const std::string& document, bool fromUDP);
 		bool isCurrent();
 
+		bool isEqual(ClientMetaData &data);
+
 		unsigned long long lastUpdate;
 		std::string name;
 		std::string unit;
 		int selected;
-		DCSPosition position;
 		RadioInformation radio[3];
 		bool hasRadio;
 		bool groundCommander;

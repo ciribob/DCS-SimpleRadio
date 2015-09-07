@@ -23,11 +23,9 @@
 
 //239.255.50.10
 //5050
-//{"name":"New callsign","pos":{"x":-356151.26572553,"y":618352.64149251},"radios":[{"frequency":"2513333333.00","id":1,"modulation":0,"name":"UH1H UHF"},{"frequency":"100000023","id":2,"modulation":0,"name":"UH1H VHF"},{"frequency":30,"id":3,"modulation":1,"name":"UH1H FM"}],"selected":1,"unit":"UH-1H","volume":[100,100,100]}
 
 
 using std::string;
-using std::vector;
 using std::thread;
 
 static SimpleRadio::Plugin plugin;
@@ -69,7 +67,7 @@ namespace SimpleRadio
 
 		//read registry key
 		this->readSettings();
-	
+
 		this->acceptor = thread(&Plugin::UDPListener, this);
 
 		this->udpCommandListener = thread(&Plugin::UDPCommandListener, this);
@@ -84,7 +82,7 @@ namespace SimpleRadio
 		iniPath.append(configPath);
 		iniPath.append("SimpleRadio.ini");
 
-	//	this->teamspeak.printMessageToCurrentTab(iniPath.c_str());
+		//	this->teamspeak.printMessageToCurrentTab(iniPath.c_str());
 
 		std::wstring stemp = std::wstring(iniPath.begin(), iniPath.end());
 		LPCWSTR sw = stemp.c_str();
@@ -177,7 +175,7 @@ namespace SimpleRadio
 			this->start();
 
 			this->teamspeak.printMessageToCurrentTab("Switched");
-		//	this->teamspeak.printMessageToCurrentTab(this->getConfigPath());
+			//	this->teamspeak.printMessageToCurrentTab(this->getConfigPath());
 
 			return true;
 		}
@@ -191,7 +189,7 @@ namespace SimpleRadio
 		const size_t BUFFER_SIZE = 256;
 		//const int MHz = 1000000;
 		char buffer[BUFFER_SIZE] = { 0 };
-		
+
 		try
 		{
 
@@ -203,6 +201,7 @@ namespace SimpleRadio
 				return buffer;
 			}
 
+			//get clientInfoData
 			if (myID == clientId)
 			{
 				clientInfoData = this->myClientData;
@@ -212,7 +211,7 @@ namespace SimpleRadio
 				clientInfoData = this->connectedClient.at(clientId);
 			}
 
-
+			//do we have any valid update at all
 			if (clientInfoData.lastUpdate > 5000ull)
 			{
 				//no radio
@@ -225,7 +224,7 @@ namespace SimpleRadio
 					}
 					else
 					{
-						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio: None\nCA Mode:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(),clientInfoData.groundCommander ? "ON" : "OFF");
+						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio: None\nCA Mode:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), clientInfoData.groundCommander ? "ON" : "OFF");
 
 					}
 					strcat_s(buffer, BUFFER_SIZE, status);
@@ -233,31 +232,31 @@ namespace SimpleRadio
 					return buffer;
 
 				}
-
-				RadioInformation currentRadio = clientInfoData.radio[clientInfoData.selected];
-				char status[256] = { 0 };
-				const double MHZ = 1000000;
-
-				//catch divide by zero
-				if (currentRadio.frequency == 0 || currentRadio.frequency == 0.0)
-				{
-					currentRadio.frequency = -1;
-				}
-
-				
-				if (myID == clientId)
-				{
-					sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
-
-				}
 				else
 				{
-					sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s",clientInfoData.isCurrent()?"Live":"Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF");
+					RadioInformation &currentRadio = clientInfoData.radio[clientInfoData.selected];
+					char status[256] = { 0 };
+					const double MHZ = 1000000;
 
+					//catch divide by zero
+					if (currentRadio.frequency == 0 || currentRadio.frequency == 0.0)
+					{
+						currentRadio.frequency = -1;
+					}
+
+
+					if (myID == clientId)
+					{
+						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
+
+					}
+					else
+					{
+						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF");
+
+					}
+					strcat_s(buffer, BUFFER_SIZE, status);
 				}
-				strcat_s(buffer, BUFFER_SIZE, status);
-				
-
 			}
 			else
 			{
@@ -440,7 +439,7 @@ namespace SimpleRadio
 		}
 		else if (strcmp("DCS-SR-VOLUME-10-DOWN", hotkeyCommand) == 0)
 		{
-			
+
 			selectedRadio.volume = selectedRadio.volume - 0.1;
 
 			if (selectedRadio.volume < 0.0)
@@ -450,7 +449,7 @@ namespace SimpleRadio
 
 			this->teamspeak.printMessageToCurrentTab("Volume Down");
 		}
-		
+
 
 	}
 
@@ -568,22 +567,14 @@ namespace SimpleRadio
 				if (!ret.second)
 				{
 					this->connectedClient[clientId] = metadata;
-					//	this->teamspeak.printMessageToCurrentTab("Updated Client!");
 
-						//existed
-						//ret.second = metadata;
 				}
-
-				//this->teamspeak.printMessageToCurrentTab("Recevied From Clients!");
-				//this->teamspeak.printMessageToCurrentTab(bufferForMetaData);
 			}
 			catch (...)
 			{
 				this->teamspeak.logMessage("Failed to parse client metadata", LogLevel_ERROR, Plugin::NAME, 0);
 
 			}
-
-
 		}
 
 
@@ -638,7 +629,7 @@ namespace SimpleRadio
 			{
 
 
-				RadioInformation sendingRadio = talkingClient.radio[talkingClient.selected];
+				RadioInformation &sendingRadio = talkingClient.radio[talkingClient.selected];
 
 				for (int i = 0; i < 3; i++)
 				{
@@ -690,7 +681,7 @@ namespace SimpleRadio
 				{
 					canReceive = true;
 				}
-				
+
 			}
 
 		}
@@ -724,7 +715,7 @@ namespace SimpleRadio
 			samples[i] = samples[i] * 0;
 			}*/
 		}
-		else if(recievingRadio >= 0) //we are recieving on a radio so mess with the volumes
+		else if (recievingRadio >= 0) //we are recieving on a radio so mess with the volumes
 		{
 			RadioInformation myRadio = this->myClientData.radio[recievingRadio];
 
@@ -733,7 +724,7 @@ namespace SimpleRadio
 			{
 				for (int j = 0; j < channels; j++)
 
-					samples[i * channels + j] = samples[i * channels + j] * (myRadio.volume );
+					samples[i * channels + j] = samples[i * channels + j] * (myRadio.volume);
 			}
 		}
 
@@ -794,10 +785,9 @@ namespace SimpleRadio
 		if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 		{
 			this->teamspeak.logMessage("WSAStartup failed with error", LogLevel_ERROR, Plugin::NAME, 0);
-		//	printf("Server: WSAStartup failed with error %ld\n", WSAGetLastError());
+			//	printf("Server: WSAStartup failed with error %ld\n", WSAGetLastError());
 
 		}
-	
 
 		struct sockaddr_in addr;
 
@@ -827,7 +817,7 @@ namespace SimpleRadio
 			//mreq.imr_multiaddr.s_addr = inet_addr("239.255.50.10");
 			mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 			if (setsockopt(ReceivingSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
-			//	printf("Error configuring ADD MEMBERSHIP");
+				//	printf("Error configuring ADD MEMBERSHIP");
 				this->teamspeak.logMessage("Error adding membership for Multicast - Check firewall!", LogLevel_ERROR, Plugin::NAME, 0);
 
 			}
@@ -852,56 +842,13 @@ namespace SimpleRadio
 						//this->teamspeak.printMessageToCurrentTab(ReceiveBuf);
 						ClientMetaData clientMetaData = ClientMetaData::deserialize(ReceiveBuf, true);
 
-						if (clientMetaData.hasRadio == false)
-						{
-
-							//allow frequency override
-							//intialise with dcs values
-							if (this->teamSpeakControlledClientData.radio[0].frequency < 1)
-							{
-								for (int i = 0; i < 3; i++)
-								{
-									//reset all the radios
-									this->teamSpeakControlledClientData.radio[i].frequency = clientMetaData.radio[i].frequency;
-									this->teamSpeakControlledClientData.radio[i].volume = clientMetaData.radio[i].volume;
-								}
-
-								//init selected
-								this->teamSpeakControlledClientData.selected = clientMetaData.selected;
-
-							//	this->teamspeak.printMessageToCurrentTab("Copied Everything");
-							}
-
-							//overwrite received metadata and resend modified to avoid race conditions if we use update our own metadata
-
-							for (int i = 0; i < 3; i++)
-							{
-								//overwrite current radio frequencies
-								clientMetaData.radio[i].frequency = this->teamSpeakControlledClientData.radio[i].frequency;
-								clientMetaData.radio[i].volume = this->teamSpeakControlledClientData.radio[i].volume;
-							}
-
-							//overrwrite selected
-							clientMetaData.selected = this->teamSpeakControlledClientData.selected;
-
-						}
-						else
-						{
-							for (int i = 0; i < 3; i++)
-							{
-								//reset all the radios
-								this->teamSpeakControlledClientData.radio[i].frequency = -1;
-								this->teamSpeakControlledClientData.radio[i].volume = 1.0;
-							}
-						}
+						processUDPUpdate(clientMetaData);
 
 						std::string serialised = clientMetaData.serialize();
 
-						//only send if plugin is not disabled and if we're in Ground Commander mode, if the user has enabled forced on
-						if (!this->disablePlugin 
-							&& ((this->forceOn && clientMetaData.groundCommander) 
-									|| clientMetaData.groundCommander == false ))
+						if (this->shouldSendUpdate(clientMetaData))
 						{
+							//this->teamspeak.printMessageToCurrentTab("Sending...");
 							//////Send Client METADATA
 							if (this->teamspeak.setClientSelfVariableAsString(serverHandlerID, CLIENT_META_DATA, serialised.c_str()) != ERROR_ok) {
 								//printf("Error setting CLIENT_META_DATA!!!\n");
@@ -912,8 +859,11 @@ namespace SimpleRadio
 								this->teamspeak.flushClientSelfUpdates(serverHandlerID, NULL);
 							}
 						}
+						else
+						{
+							//this->teamspeak.printMessageToCurrentTab("Not Sending...");
+						}
 
-						
 					}
 					catch (...)
 					{
@@ -933,17 +883,96 @@ namespace SimpleRadio
 		{
 			this->teamspeak.logMessage("Closesocket failed!", LogLevel_ERROR, Plugin::NAME, 0);
 		}
-			//printf("Server: closesocket() failed! Error code: %ld\n", WSAGetLastError());
-		
+		//printf("Server: closesocket() failed! Error code: %ld\n", WSAGetLastError());
+
 
 		// When your application is finished call WSACleanup.
 		//printf("Server: Cleaning up...\n");
 		if (WSACleanup() != 0)
-		{ 
+		{
 			//printf("Server: WSACleanup() failed! Error code: %ld\n", WSAGetLastError());
 			this->teamspeak.logMessage(" WSACleanup() failed!", LogLevel_ERROR, Plugin::NAME, 0);
 		}
 		// Back to the system
+	}
+
+	/*
+	Determine if we should send a metadata update to the TS3 Server
+	*/
+	bool Plugin::shouldSendUpdate(ClientMetaData &clientMetaData)
+	{
+		if (this->disablePlugin)
+		{
+			return false;
+		}
+
+		//in ground commander mode but the radio hasnt been turned on
+		if (clientMetaData.groundCommander == true && !this->forceOn)
+		{
+			return false;
+		}
+
+
+		//now only send update if the current metadata is not equal to our stored one
+		if (!this->myClientData.isEqual(clientMetaData))
+		{
+			return true;
+		}
+
+		//send update if our metadata is nearly stale
+		if (GetTickCount64() - this->myClientData.lastUpdate < 3500ull)
+		{
+			return false;
+		}
+
+		return true;
+
+	}
+
+	void Plugin::processUDPUpdate(ClientMetaData &clientMetaData)
+	{
+		if (clientMetaData.hasRadio == false)
+		{
+
+			//allow frequency override
+			//intialise with dcs values
+			if (this->teamSpeakControlledClientData.radio[0].frequency < 1)
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					//reset all the radios
+					this->teamSpeakControlledClientData.radio[i].frequency = clientMetaData.radio[i].frequency;
+					this->teamSpeakControlledClientData.radio[i].volume = clientMetaData.radio[i].volume;
+				}
+
+				//init selected
+				this->teamSpeakControlledClientData.selected = clientMetaData.selected;
+
+				//	this->teamspeak.printMessageToCurrentTab("Copied Everything");
+			}
+
+			//overwrite received metadata and resend modified to avoid race conditions if we use update our own metadata
+
+			for (int i = 0; i < 3; i++)
+			{
+				//overwrite current radio frequencies
+				clientMetaData.radio[i].frequency = this->teamSpeakControlledClientData.radio[i].frequency;
+				clientMetaData.radio[i].volume = this->teamSpeakControlledClientData.radio[i].volume;
+			}
+
+			//overrwrite selected
+			clientMetaData.selected = this->teamSpeakControlledClientData.selected;
+
+		}
+		else
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				//reset all the radios
+				this->teamSpeakControlledClientData.radio[i].frequency = -1;
+				this->teamSpeakControlledClientData.radio[i].volume = 1.0;
+			}
+		}
 	}
 
 	void Plugin::UDPCommandListener()
@@ -954,7 +983,7 @@ namespace SimpleRadio
 		SOCKADDR_IN        SenderAddr;
 		int                SenderAddrSize = sizeof(SenderAddr);
 		int                ByteReceived = 0;
-		
+
 		char          ReceiveBuf[768]; //maximum UDP Packet Size
 		int           BufLength = 768;
 
@@ -1014,8 +1043,8 @@ namespace SimpleRadio
 							}
 						}
 
-					
-						
+
+
 					}
 					catch (...)
 					{

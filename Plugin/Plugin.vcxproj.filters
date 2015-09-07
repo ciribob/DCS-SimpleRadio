@@ -27,9 +27,6 @@
     <ClInclude Include="ClientMetaData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Configuration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,9 +51,6 @@
     <ClInclude Include="ts3_functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DCSPosition.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RadioUpdate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,12 +69,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ClientMetaData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Configuration.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DCSPosition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RadioUpdate.cpp">
