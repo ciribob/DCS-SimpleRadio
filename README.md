@@ -27,7 +27,7 @@ Special thanks to Teo (ED Forums) and his GitHub Project (https://github.com/ola
  
 # Installation
 
- - First download the latest release from https://github.com/ciribob/DCS-SimpleRadio/releases and Download DCS-SimpleRadio.zip, (you don't need to download the sources) and extract the file to somewhere.
+ - First download the latest release from https://github.com/ciribob/DCS-SimpleRadio/releases/latest and Download DCS-SimpleRadio.zip, (you don't need to download the sources) and extract the file to somewhere.
 
 - Run the installer for the "2015 VC Redist x86" and  "2015 VC Redist x64" package. The plugin may not work if you don't perform this step!
     
