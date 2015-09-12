@@ -2,7 +2,7 @@
 
 DCS-SimpleRadio allows a better integration between TeamSpeak 3 and DCS. DCS-SimpleRadio will use the currently selected radio and frequency to decide if others can hear you or not.
 
-I decided to build this after playing with TARS, and wanted to be able to use more aircraft than TARS currently supports. I started this project with no knowlegde of Windows programming or C# .Net and little knowledege of C/C++ so apologies if the code is terrible but it does work! :) 
+I decided to build this after playing with TARS, and wanted to be able to use more aircraft than TARS currently supports as well as use the latest version of TeamSpeak.
 
 If you want to compile or modify it, feel free and the project was built using Visual Studio 2015 - Community Edition.
 
@@ -92,7 +92,28 @@ Once this is done, open Teamspeak and type ```/sr switch``` in the chat window. 
 # Using in Game
 Once the installation is complete, nothing more needs to be done to get DCS-Simple Radio working. You can also restart Teamspeak without issues while in game and it will automatically reconnect to the radio system. You can also disable the system at any time using either the HotKey or unticking the DCS-SimpleRadio plugin under Settings->Plugins in Teamspeak.
 
-The radio status panel can be launched by double clicking DCS-SimpleRadio.exe and should appear on top of the DCS window as long as DCS is in windowed mode. It can be launched or restarted at any time without issues. The DCS-SimpleRadio status panel can be run from any location as long as where ever it's copied to also as the ```Newtonsoft.Json.dll``` there as well.
+### Radio Status Panel
+
+The radio status panel can be launched by double clicking DCS-SimpleRadio.exe and should appear on top of the DCS window as long as DCS is in **windowed mode**. It can be launched or restarted at any time without issues. The DCS-SimpleRadio status panel can be run from any location as long as where ever it's copied to also as the ```Newtonsoft.Json.dll``` there as well.
+
+The buttons and volume slider on the radio status panel can be used as long as you are in an FC3 Aircraft such as the F15 that doesn't have an interactive cockpit. You can also select the current active radio by either clicking on the radio frequency or the radio status dot.
+
+Below are a few examples of what the radio status can look like:
+
+**FC3 Aircraft:**
+
+![alt text](http://i1056.photobucket.com/albums/t379/cfisher881/connected%20fc3_zpsni5feef6.jpg "FC3 Aircraft")
+
+**Huey with two radios off or damaged:**
+
+![alt text](http://i1056.photobucket.com/albums/t379/cfisher881/connected%20but%20some%20radios%20off_zpsefmiwtay.jpg "Huey")
+
+**Connection to DCS lost or the player is not in an Aircraft and has not forced the radio on with a HotKey:**
+
+![alt text](http://i1056.photobucket.com/albums/t379/cfisher881/Not%20Connected_zpsk8pwnuwt.jpg
+ "Radio Off")
+
+### Aircraft Radios
 
 I will list below the location of the Radio switch in all clickable aircraft to help you along.
 
