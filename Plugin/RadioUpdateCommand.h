@@ -8,6 +8,8 @@ namespace SimpleRadio
 
 		double freq;
 		int radio;
+		float volume;
+		int cmdType;
 
 		RadioUpdateCommand();
 		~RadioUpdateCommand();

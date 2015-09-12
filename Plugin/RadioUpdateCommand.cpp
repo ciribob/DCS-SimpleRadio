@@ -24,6 +24,8 @@ namespace SimpleRadio
 		{
 			data.freq = root["freq"].asDouble();
 			data.radio = root["radio"].asInt();
+			data.volume = root["volume"].asFloat();
+			data.cmdType = root["cmdType"].asInt();
 		}
 		else
 		{

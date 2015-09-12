@@ -80,7 +80,7 @@ namespace SimpleRadio
 
 		int recvfromTimeOutUDP(SOCKET socket, long sec, long usec);
 		
-		SOCKET mksocket(struct sockaddr_in *addr);
+		SOCKET mksocket(struct sockaddr_in *addr, bool reuse);
 
 		void UDPListener();
 

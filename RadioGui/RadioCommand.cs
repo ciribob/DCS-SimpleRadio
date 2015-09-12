@@ -8,7 +8,15 @@ namespace RadioGui
 {
     class RadioCommand
     {
-        public double freq;
+        public enum CmdType
+        {
+            FREQUENCY=1,
+            VOLUME=2,
+            SELECT=3,
+        }
+        public double freq = 1;
         public int radio;
+        public float volume = 1.0f;
+        public CmdType cmdType;
     }
 }

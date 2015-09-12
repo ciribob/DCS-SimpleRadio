@@ -33,7 +33,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.0.9";
+	const char* Plugin::VERSION = "1.1.3";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -748,14 +748,14 @@ namespace SimpleRadio
 		return select(0, &fds, 0, 0, &timeout);
 	}
 
-	SOCKET Plugin::mksocket(struct sockaddr_in *addr)
+	SOCKET Plugin::mksocket(struct sockaddr_in *addr, bool reuse)
 	{
 		SOCKET sock = INVALID_SOCKET;
 		int opt = 1;
 		if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
 			return NULL;
 
-		if (this->switchToUnicast == false)
+		if (reuse)
 		{
 			if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt)) < 0)
 				return NULL;
@@ -805,7 +805,7 @@ namespace SimpleRadio
 
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-		ReceivingSocket = mksocket(&addr);
+		ReceivingSocket = mksocket(&addr,!this->switchToUnicast);
 
 		/* use setsockopt() to request that the kernel join a multicast group */
 
@@ -998,10 +998,18 @@ namespace SimpleRadio
 		struct sockaddr_in addr;
 
 		addr.sin_family = AF_INET;
-		addr.sin_port = htons(5060);
+		if (this->switchToUnicast == false)
+		{
+			addr.sin_port = htons(5060);
+		}
+		else
+		{
+			addr.sin_port = htons(5061);
+		}
+	
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-		ReceivingSocket = mksocket(&addr);
+		ReceivingSocket = mksocket(&addr, !this->switchToUnicast);
 
 		/* use setsockopt() to request that the kernel join a multicast group */
 
@@ -1038,9 +1046,27 @@ namespace SimpleRadio
 
 							if (updateCommand.radio >= 0)
 							{
-								//reset all the radios
-								this->teamSpeakControlledClientData.radio[updateCommand.radio].frequency += updateCommand.freq;
+								/*
+								FREQUENCY=1,
+								VOLUME=2,
+								SELECT=3,
+								*/
+								switch (updateCommand.cmdType) {
+								case 1:
+									this->teamSpeakControlledClientData.radio[updateCommand.radio].frequency += updateCommand.freq;
+									break;
+								case 2: 
+									this->teamSpeakControlledClientData.radio[updateCommand.radio].volume = updateCommand.volume;
+									break;
+								case 3:
+									this->teamSpeakControlledClientData.selected = updateCommand.radio;
+									break;
+								default:
+									break;
+
+								}
 							}
+							
 						}
 
 
