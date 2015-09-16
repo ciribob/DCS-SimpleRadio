@@ -7,18 +7,18 @@ SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking
 SR.dbg = {}
 SR.logFile = io.open(lfs.writedir()..[[Logs\DCS-SimpleRadio.log]], "w")
 function SR.log(str)
-    if SR.logFile then
-        SR.logFile:write(str.."\n")
-        SR.logFile:flush()
-    end
+	if SR.logFile then
+		SR.logFile:write(str.."\n")
+		SR.logFile:flush()
+	end
 end
 
 function SR.shallowCopy(source, dest)
-    dest = dest or {}
-    for k, v in pairs(source) do
-        dest[k] = v
-    end
-    return dest
+	dest = dest or {}
+	for k, v in pairs(source) do
+		dest[k] = v
+	end
+	return dest
 end
 
 package.path  = package.path..";.\\LuaSocket\\?.lua"
@@ -44,22 +44,22 @@ _prevExport.LuaExportAfterNextFrame = LuaExportAfterNextFrame
 
 -- Lua Export Functions
 LuaExportStart = function()
-    
-        --socket.try(UDPSendSocket:sendto("Start\n\n", "239.255.50.10", 5050))
-    
-    -- Chain previously-included export as necessary
-    if _prevExport.LuaExportStart then
-        _prevExport.LuaExportStart()
-    end
+	
+		--socket.try(UDPSendSocket:sendto("Start\n\n", "239.255.50.10", 5050))
+	
+	-- Chain previously-included export as necessary
+	if _prevExport.LuaExportStart then
+		_prevExport.LuaExportStart()
+	end
 end
 
 LuaExportStop = function()
-    
-    --socket.try(UDPSendSocket:sendto("End\n\n", "239.255.50.10", 5050))
-    -- Chain previously-included export as necessary
-    if _prevExport.LuaExportStop then
-        _prevExport.LuaExportStop()
-    end
+	
+	--socket.try(UDPSendSocket:sendto("End\n\n", "239.255.50.10", 5050))
+	-- Chain previously-included export as necessary
+	if _prevExport.LuaExportStop then
+		_prevExport.LuaExportStop()
+	end
 end
 
 LuaExportActivityNextEvent = function(tCurrent)
@@ -598,15 +598,8 @@ function SR.exportRadioHawk(_data)
     _data.radios[3].modulation = 0
     _data.radios[3].volume = 1.0
 
-    local _selector = SR.getSelectorPosition(404,0.5)
 
-    if  _selector == 1 then
-        _data.selected = 0
-    elseif  _selector == 2 then
-        _data.selected = 1
-    else
-        _data.selected = -1
-    end
+    _data.selected = 0
 
     return _data;
 end
