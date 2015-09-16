@@ -1,3 +1,4 @@
+-- Version 1.1.3.1
 SR = {}
 
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
@@ -6,18 +7,18 @@ SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking
 SR.dbg = {}
 SR.logFile = io.open(lfs.writedir()..[[Logs\DCS-SimpleRadio.log]], "w")
 function SR.log(str)
-	if SR.logFile then
-		SR.logFile:write(str.."\n")
-		SR.logFile:flush()
-	end
+    if SR.logFile then
+        SR.logFile:write(str.."\n")
+        SR.logFile:flush()
+    end
 end
 
 function SR.shallowCopy(source, dest)
-	dest = dest or {}
-	for k, v in pairs(source) do
-		dest[k] = v
-	end
-	return dest
+    dest = dest or {}
+    for k, v in pairs(source) do
+        dest[k] = v
+    end
+    return dest
 end
 
 package.path  = package.path..";.\\LuaSocket\\?.lua"
@@ -43,22 +44,22 @@ _prevExport.LuaExportAfterNextFrame = LuaExportAfterNextFrame
 
 -- Lua Export Functions
 LuaExportStart = function()
-	
-		--socket.try(UDPSendSocket:sendto("Start\n\n", "239.255.50.10", 5050))
-	
-	-- Chain previously-included export as necessary
-	if _prevExport.LuaExportStart then
-		_prevExport.LuaExportStart()
-	end
+    
+        --socket.try(UDPSendSocket:sendto("Start\n\n", "239.255.50.10", 5050))
+    
+    -- Chain previously-included export as necessary
+    if _prevExport.LuaExportStart then
+        _prevExport.LuaExportStart()
+    end
 end
 
 LuaExportStop = function()
-	
-	--socket.try(UDPSendSocket:sendto("End\n\n", "239.255.50.10", 5050))
-	-- Chain previously-included export as necessary
-	if _prevExport.LuaExportStop then
-		_prevExport.LuaExportStop()
-	end
+    
+    --socket.try(UDPSendSocket:sendto("End\n\n", "239.255.50.10", 5050))
+    -- Chain previously-included export as necessary
+    if _prevExport.LuaExportStop then
+        _prevExport.LuaExportStop()
+    end
 end
 
 LuaExportActivityNextEvent = function(tCurrent)
@@ -112,6 +113,10 @@ LuaExportActivityNextEvent = function(tCurrent)
                 _update = SR.exportRadioFW190(_update)
             elseif _update.unit == "Bf-109K-4" then
                 _update = SR.exportRadioBF109(_update)
+            elseif _update.unit == "C-101EB" then
+                _update = SR.exportRadioC101(_update)
+            elseif _update.unit == "Hawk" then
+                _update = SR.exportRadioHawk(_update)
             else
                 -- FC 3
                 _update.radios[1].name = "FC3 UHF"
@@ -247,9 +252,6 @@ function SR.exportRadioKA50(_data)
     _data.radios[3].modulation = 1
     _data.radios[3].volume = 1.0
 
-
-    -- Get selected radio from SPU-9
-
     local switch = _panel:get_argument_value(428)
 
     if SR.nearlyEqual(switch, 0.0, 0.03) then
@@ -281,16 +283,14 @@ function SR.exportRadioMI8(_data)
     _data.radios[3].modulation = 0
     _data.radios[3].volume = SR.getRadioVolume(0, 743,{0.0,1.0},false)
 
-    local _panel = GetDevice(0)
     -- Get selected radio from SPU-9
+    local _switch = SR.getSelectorPosition(550,0.1)
 
-    local switch = _panel:get_argument_value(550)
-
-    if SR.nearlyEqual(switch, 0.0, 0.03) then
+    if _switch == 0 then
         _data.selected = 0
-    elseif SR.nearlyEqual(switch, 0.1, 0.03) then
+    elseif _switch == 1 then
         _data.selected = 2
-    elseif SR.nearlyEqual(switch, 0.2, 0.03) then
+    elseif _switch == 2 then
         _data.selected = 1
     else
         _data.selected = -1
@@ -325,8 +325,6 @@ function SR.exportRadioA10C(_data)
     local value = GetDevice(0):get_argument_value(239)
 
     local n = math.abs(tonumber(string.format("%.0f", (value - 0.4) / 0.1)))
-
-  --  socket.try(UDPSendSocket:sendto(value.. " "..n.."\n\n", "239.255.50.10", 5051))
 
     if n == 3 then
         _data.selected = 2
@@ -487,6 +485,132 @@ function SR.exportRadioBF109(_data)
     return _data;
 end
 
+function SR.exportRadioC101(_data)
+
+--    local _count = 0
+--
+--    local status,result;
+--
+--    while(true) do
+--        status,result = pcall(function(_c)
+--            return SR.getRadioFrequency(_c)
+--        end, _count)
+--
+--        if not status and _count < 1000 then
+--            SR.log('ERROR: ' .. result)
+--            _count = _count +1
+--            result = 0.0
+--        else
+--            break
+--        end
+--
+--    end
+    local MHZ = 1000000
+
+    _data.radios[1].name = "UHF"
+
+    local _selector = SR.getSelectorPosition(232,0.25)
+
+    if _selector == 1 or _selector == 2 then
+
+        local _hundreds = SR.round(SR.getKnobPosition(0, 226,{0.1,0.3},{1,3}),0.1)*100*1000000
+        local _tens = SR.round(SR.getKnobPosition(0, 227,{0.0,0.9},{0,9}),0.1)*10*1000000
+        local _ones = SR.round(SR.getKnobPosition(0, 228,{0.0,0.9},{0,9}),0.1)*1000000
+        local _tenth = SR.round(SR.getKnobPosition(0, 229,{0.0,0.9},{0,9}),0.1)*100000
+        local _hundreth = SR.round(SR.getKnobPosition(0, 230,{0.0,0.3},{0,3}),0.1)*10000
+
+        _data.radios[1].frequency = _hundreds+_tens+_ones+_tenth+_hundreth
+    else
+        _data.radios[1].frequency = 1
+    end
+    _data.radios[1].modulation = 0
+    _data.radios[1].volume = SR.getRadioVolume(0, 234,{0.0,1.0},false)
+
+
+    _data.radios[2].name = "VHF"
+
+    local _vhfPower = SR.getSelectorPosition(413,1.0)
+
+    if _vhfPower == 1 then
+
+        local _tens = SR.round(SR.getKnobPosition(0, 415,{0.1,0.3},{1,3}),0.1)*10*1000000
+        local _ones = SR.round(SR.getKnobPosition(0, 416,{0.0,0.9},{0,9}),0.1)*1000000
+        local _tenth = SR.round(SR.getKnobPosition(0, 417,{0.0,0.9},{0,9}),0.1)*100000
+        local _hundreth = SR.round(SR.getKnobPosition(0, 418,{0.0,0.3},{0,3}),0.1)*10000
+
+        _data.radios[2].frequency =(MHZ*110) + _tens+_ones+_tenth+_hundreth
+    else
+        _data.radios[2].frequency = 1
+    end
+    _data.radios[2].modulation = 0
+    _data.radios[2].volume = SR.getRadioVolume(0, 412,{0.0,1.0},false)
+
+    _data.radios[3].name = "No Radio"
+    _data.radios[3].frequency =  1
+    _data.radios[3].modulation = 0
+    _data.radios[3].volume = 1.0
+
+    local _selector = SR.getSelectorPosition(404,0.5)
+
+    if  _selector == 1 then
+        _data.selected = 0
+    elseif  _selector == 2 then
+        _data.selected = 1
+    else
+        _data.selected = -1
+    end
+
+    return _data;
+end
+
+
+function SR.exportRadioHawk(_data)
+
+    local MHZ = 1000000
+
+    _data.radios[1].name = "UHF"
+
+    local _selector = SR.getSelectorPosition(221,0.25)
+
+    if _selector == 1 or _selector == 2 then
+
+        local _hundreds = SR.getSelectorPosition(226,0.25)*100*MHZ
+        local _tens = SR.round(SR.getKnobPosition(0, 227,{0.0,0.9},{0,9}),0.1)*10*MHZ
+        local _ones = SR.round(SR.getKnobPosition(0, 228,{0.0,0.9},{0,9}),0.1)*MHZ
+        local _tenth = SR.round(SR.getKnobPosition(0, 229,{0.0,0.9},{0,9}),0.1)*100000
+        local _hundreth = SR.round(SR.getKnobPosition(0, 230,{0.0,0.3},{0,3}),0.1)*10000
+
+        _data.radios[1].frequency = _hundreds+_tens+_ones+_tenth+_hundreth
+    else
+        _data.radios[1].frequency = 1
+    end
+    _data.radios[1].modulation = 0
+    _data.radios[1].volume = 1
+
+
+    _data.radios[2].name = "No Radio"
+    _data.radios[2].frequency =1
+    _data.radios[2].modulation = 0
+    _data.radios[2].volume =1
+
+    _data.radios[3].name = "No Radio"
+    _data.radios[3].frequency =  1
+    _data.radios[3].modulation = 0
+    _data.radios[3].volume = 1.0
+
+    local _selector = SR.getSelectorPosition(404,0.5)
+
+    if  _selector == 1 then
+        _data.selected = 0
+    elseif  _selector == 2 then
+        _data.selected = 1
+    else
+        _data.selected = -1
+    end
+
+    return _data;
+end
+
 
 function LuaExportBeforeNextFrame()
 
@@ -518,6 +642,28 @@ function SR.getRadioVolume(_deviceId, _arg,_minMax,_invert)
     end
     return 1.0
 end
+
+function SR.getKnobPosition(_deviceId, _arg,_minMax,_mapMinMax)
+
+    local _device = GetDevice(_deviceId)
+
+    if _device then
+        local _val = tonumber(_device:get_argument_value(_arg))
+        local _reRanged = SR.rerange(_val,_minMax,_mapMinMax)
+
+       return _reRanged
+    end
+    return -1
+end
+
+function SR.getSelectorPosition(_args,_step)
+    local _value = GetDevice(0):get_argument_value(_args)
+    local _num = math.abs(tonumber(string.format("%.0f", (_value) / _step)))
+
+    return _num
+
+end
+
 
 function SR.getRadioFrequency(_deviceId, _roundTo)
     local _device = GetDevice(_deviceId)
