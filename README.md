@@ -11,8 +11,8 @@ Thanks to Towsim, Creator of ARIES, [FSF] Ian for DCS-Bios.
 Special thanks to Teo (ED Forums) and his GitHub Project (https://github.com/olanykvist/mars) without which this project would've taken a lot longer :)
 
 # Features
-  - Full radio integration with all clickable cockpit aircraft (except Hawk & C-101)
-    - Working Volume Control - A10C radio starts with all radio volumes at 0!
+  - Full radio integration with all clickable cockpit aircraft - Partial integration with Hawk (Only the UHF Radio)
+    - Working Volume Control - A10C radio starts with all radio volumes at 0 - Except for the Hawk
     - Working Frequency Control
     - Maximum of 3 radios supported per aircraft
   - FC3 Aircraft have 3 radios controllable by hotkeys or the optional DCS-SimpleRadio.exe porgram
