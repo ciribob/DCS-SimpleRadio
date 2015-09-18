@@ -1,0 +1,27 @@
+﻿<Window x:Class="RadioTester.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RadioTester"
+        mc:Ignorable="d"
+        ResizeMode="CanMinimize"
+        Topmost="True"
+        
+    
+        Title="DCS-RadioTester" Height="325" Width="120">
+
+    <WrapPanel Name="containerPanel">
+
+        <local:RadioControlGroup x:Name="radio1"  />
+
+        <local:RadioControlGroup x:Name="radio2"/>
+
+        <local:RadioControlGroup x:Name="radio3"/>
+        <Button x:Name="select1" Content="1" Width="30" Click="select1_Click" />
+        <Button x:Name="select2" Content="2" Width="30" Click="select2_Click"/>
+        <Button x:Name="select3" Content="3" Width="30" Click="select3_Click" />
+        <Button x:Name="select4" Content="None" Width="50" Click="select4_Click" />
+
+    </WrapPanel>
+</Window>

@@ -7,21 +7,14 @@
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
         Topmost="True"
-        
-    
+       
         Title="DCS-SimpleRadio" Height="325" Width="120">
 
     <WrapPanel Name="containerPanel">
 
         <local:RadioControlGroup x:Name="radio1" />
-
         <local:RadioControlGroup x:Name="radio2"/>
-
         <local:RadioControlGroup x:Name="radio3"/>
-
-
-
-     
 
         <Ellipse  x:Name="statusIndicator" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" />
         <Label x:Name="statusLabel" Content="Not in Game" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="90" Margin="2" Height="20" Padding="2"/>
@@ -29,11 +22,5 @@
         <Ellipse  x:Name="allowNonPlayersIndicator" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" />
         <Label x:Name="allowNonPlayers" Content="Not in Game" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="90" Margin="2" Height="20" Padding="2"/>
 
-
-        <Grid/>
-
     </WrapPanel>
-
-
-
 </Window>

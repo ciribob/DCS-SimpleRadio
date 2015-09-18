@@ -33,7 +33,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.1.3";
+	const char* Plugin::VERSION = "1.1.4";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -623,52 +623,57 @@ namespace SimpleRadio
 			}
 
 			//check both updates are valid
-			if (this->myClientData.isCurrent()
-				&& talkingClient.isCurrent()
-				&& talkingClient.selected >= 0 && talkingClient.selected < 3)
+			if (this->myClientData.isCurrent() && talkingClient.isCurrent())
 			{
 
-
-				RadioInformation &sendingRadio = talkingClient.radio[talkingClient.selected];
-
-				for (int i = 0; i < 3; i++)
+				if (talkingClient.selected >= 0 && talkingClient.selected < 3)
 				{
-					RadioInformation myRadio = this->myClientData.radio[i];
+					RadioInformation &sendingRadio = talkingClient.radio[talkingClient.selected];
 
-					//	std::ostringstream oss;
-				//oss << "Receiving On: " <<myRadio.frequency << " From "<<sendingRadio.frequency;
-
-					//	this->teamspeak.printMessageToCurrentTab(oss.str().c_str());
-
-					if (myRadio.frequency == sendingRadio.frequency
-						&& myRadio.modulation == sendingRadio.modulation
-						&& myRadio.frequency > 1)
+					for (int i = 0; i < 3; i++)
 					{
+						RadioInformation myRadio = this->myClientData.radio[i];
 
-						//if (isTalking)
-						//{
-						//	RadioInformation currentRadio = this->myClientData.radio[myClientData.selected];
+						//	std::ostringstream oss;
+					//oss << "Receiving On: " <<myRadio.frequency << " From "<<sendingRadio.frequency;
 
-						//	if (currentRadio.frequency == sendingRadio.frequency && currentRadio.modulation == sendingRadio.modulation)
-						//	{
-						//		//comment in for testing
-						//		canReceive = true;
-						//	}
-						//	else
-						//	{
-						//		canReceive = true;
-						//		break;
-						//	}
+						//	this->teamspeak.printMessageToCurrentTab(oss.str().c_str());
 
-						//}
-						//else
-						//{
-							//not talking on the same radio as we're receving on
-						canReceive = true;
-						recievingRadio = i;
-						break;
-						//}
+						if (myRadio.frequency == sendingRadio.frequency
+							&& myRadio.modulation == sendingRadio.modulation
+							&& myRadio.frequency > 1)
+						{
+
+							//if (isTalking)
+							//{
+							//	RadioInformation currentRadio = this->myClientData.radio[myClientData.selected];
+
+							//	if (currentRadio.frequency == sendingRadio.frequency && currentRadio.modulation == sendingRadio.modulation)
+							//	{
+							//		//comment in for testing
+							//		canReceive = true;
+							//	}
+							//	else
+							//	{
+							//		canReceive = true;
+							//		break;
+							//	}
+
+							//}
+							//else
+							//{
+								//not talking on the same radio as we're receving on
+							canReceive = true;
+							recievingRadio = i;
+							break;
+							//}
+						}
 					}
+				}
+				else
+				{
+					//Client has NO radio selected so we cant hear their broadcast
+					canReceive = false;
 				}
 			}
 			else
