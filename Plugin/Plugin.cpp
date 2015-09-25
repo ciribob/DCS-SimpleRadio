@@ -18,8 +18,11 @@
 #include <iphlpapi.h>
 #include <sstream>
 #include <assert.h>
+#include <windows.h>
+#include <wininet.h>
 
 #pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Wininet")
 
 //239.255.50.10
 //5050
@@ -33,7 +36,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.1.4";
+	const char* Plugin::VERSION = "1.1.5";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -63,6 +66,8 @@ namespace SimpleRadio
 
 	void Plugin::start()
 	{
+		//start update check
+
 		this->listening = true;
 
 		//read registry key
@@ -71,7 +76,11 @@ namespace SimpleRadio
 		this->acceptor = thread(&Plugin::UDPListener, this);
 
 		this->udpCommandListener = thread(&Plugin::UDPCommandListener, this);
+
+		checkForUpdate();
 	}
+
+
 
 	LPCWSTR Plugin::getConfigPath()
 	{
@@ -132,6 +141,11 @@ namespace SimpleRadio
 		if (this->udpCommandListener.joinable())
 		{
 			this->udpCommandListener.join();
+		}
+
+		if (this->updateThread.joinable())
+		{
+			this->updateThread.join();
 		}
 	}
 
@@ -605,23 +619,6 @@ namespace SimpleRadio
 				// Failed to get talkFlag value, assume not talking
 			}
 
-			if (isTalking)
-			{
-				/*if (this->currentRadio == receiver)
-				{
-					for (int i = 0; i < sampleCount; ++i)
-					{
-						samples[i] = 0;
-					}
-
-					return;
-				}*/
-			}
-			else
-			{
-
-			}
-
 			//check both updates are valid
 			if (this->myClientData.isCurrent() && talkingClient.isCurrent())
 			{
@@ -636,7 +633,6 @@ namespace SimpleRadio
 
 						//	std::ostringstream oss;
 					//oss << "Receiving On: " <<myRadio.frequency << " From "<<sendingRadio.frequency;
-
 						//	this->teamspeak.printMessageToCurrentTab(oss.str().c_str());
 
 						if (myRadio.frequency == sendingRadio.frequency
@@ -704,10 +700,6 @@ namespace SimpleRadio
 
 		if (!canReceive)
 		{
-			/*for (int i = 0; i < sampleCount; ++i)
-			{
-			samples[i] = samples[i] * getVolume();
-			}*/
 
 			for (int i = 0; i < sampleCount; i++)
 			{
@@ -728,12 +720,20 @@ namespace SimpleRadio
 			for (int i = 0; i < sampleCount; i++)
 			{
 				for (int j = 0; j < channels; j++)
-
 					samples[i * channels + j] = samples[i * channels + j] * (myRadio.volume);
 			}
 		}
+	}
 
-
+	void Plugin::checkForUpdate()
+	{
+		//start update thread
+		if (this->updateThread.joinable())
+		{
+			//finish old thread
+			this->updateThread.join();
+		}
+		this->updateThread = thread(&Plugin::UpdateCheckThread, this);
 	}
 
 	int Plugin::recvfromTimeOutUDP(SOCKET socket, long sec, long usec)
@@ -810,7 +810,7 @@ namespace SimpleRadio
 
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-		ReceivingSocket = mksocket(&addr,!this->switchToUnicast);
+		ReceivingSocket = mksocket(&addr, !this->switchToUnicast);
 
 		/* use setsockopt() to request that the kernel join a multicast group */
 
@@ -901,6 +901,91 @@ namespace SimpleRadio
 		// Back to the system
 	}
 
+	void Plugin::UpdateCheckThread()
+	{
+
+		DWORD r = 0;
+		if (!InternetGetConnectedState(&r, 0))
+			return;
+		if (r & INTERNET_CONNECTION_OFFLINE)
+			return;
+
+		HINTERNET httpInit = InternetOpen(L"DCS-SimpleRadio-Updater", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+		HINTERNET httpConnection = InternetConnect(httpInit, L"github.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+		//dont follow githubs redirect as the redirect gives us the latest version
+		HINTERNET httpRequest = HttpOpenRequest(httpConnection, NULL, L"/ciribob/DCS-SimpleRadio/releases/latest", NULL, NULL, NULL, INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_AUTO_REDIRECT, 0);
+
+		if (HttpSendRequest(httpRequest, NULL, 0, NULL, 0))
+		{
+			DWORD bufferSize = 512;
+			LPVOID locationBuffer = new char[bufferSize];
+
+			//while (InternetReadFile(File, &ch, 1, &dwBytes))
+			if (HttpQueryInfo(httpRequest, HTTP_QUERY_LOCATION, locationBuffer, &bufferSize, NULL))
+			{
+				//its a 2 Byte CHAR! so char[0]=h and char[1]=0 !!
+				WCHAR *locationStr = reinterpret_cast<WCHAR *>(locationBuffer);
+				locationStr[bufferSize] = 0; //add terminator
+
+				//convert to widestring
+				std::wstring ws(locationStr);
+				//convert to normal string
+				std::string str(ws.begin(), ws.end());
+
+				//get the latest version number
+				int index = str.find_last_of('/');
+
+				std::string version = str.substr(index + 1);
+				std::string currentVersion(VERSION);
+
+				if (currentVersion == version)
+				{
+					char buffer[256] = { 0 };
+					sprintf_s(buffer, 256, "You are using the latest version of DCS-SimpleRadio: %s", VERSION);
+
+					this->teamspeak.printMessageToCurrentTab(buffer);
+					//std::cout << "OK! Same Version";
+				}
+				else
+				{
+					char buffer[256] = { 0 };
+					sprintf_s(buffer, 256, "Update to DCS-SimpleRadio Available. Latest Version %s - Download at https://github.com/ciribob/DCS-SimpleRadio/releases/latest", VERSION);
+
+					this->teamspeak.printMessageToCurrentTab(buffer);
+					//display alert box
+					int result = MessageBox(
+						NULL,
+						(LPCWSTR)L"Update to DCS-SimpleRadio Available\nDo you want to download it now?",
+						(LPCWSTR)L"Update Available",
+						MB_ICONWARNING | MB_YESNO
+						);
+
+					switch (result)
+					{
+					case IDYES:
+						// launch browser
+						ShellExecute(NULL, L"open", L"https://github.com/ciribob/DCS-SimpleRadio/releases/latest",
+							NULL, NULL, SW_SHOWNORMAL);
+						break;
+					case IDNO:
+
+						break;
+					default:
+
+						break;
+					}
+
+					//std::cout << "Newer version available";
+				}
+			}
+
+			delete[] locationBuffer;
+		}
+
+		InternetCloseHandle(httpRequest);
+		InternetCloseHandle(httpConnection);
+		InternetCloseHandle(httpInit);
+	}
 	/*
 	Determine if we should send a metadata update to the TS3 Server
 	*/
@@ -1011,7 +1096,7 @@ namespace SimpleRadio
 		{
 			addr.sin_port = htons(5061);
 		}
-	
+
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 		ReceivingSocket = mksocket(&addr, !this->switchToUnicast);
@@ -1060,7 +1145,7 @@ namespace SimpleRadio
 								case 1:
 									this->teamSpeakControlledClientData.radio[updateCommand.radio].frequency += updateCommand.freq;
 									break;
-								case 2: 
+								case 2:
 									this->teamSpeakControlledClientData.radio[updateCommand.radio].volume = updateCommand.volume;
 									break;
 								case 3:
@@ -1071,7 +1156,7 @@ namespace SimpleRadio
 
 								}
 							}
-							
+
 						}
 
 
@@ -1305,4 +1390,58 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 }
 void ts3plugin_onHotkeyEvent(const char* keyword) {
 	plugin.onHotKeyEvent(keyword);
+}
+
+
+
+
+
+/*
+* Initialize plugin menus.
+* This function is called after ts3plugin_init and ts3plugin_registerPluginID. A pluginID is required for plugin menus to work.
+* Both ts3plugin_registerPluginID and ts3plugin_freeMemory must be implemented to use menus.
+* If plugin menus are not used by a plugin, do not implement this function or return NULL.
+*/
+void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
+	/*
+	* Create the menus
+	* There are three types of menu items:
+	* - PLUGIN_MENU_TYPE_CLIENT:  Client context menu
+	* - PLUGIN_MENU_TYPE_CHANNEL: Channel context menu
+	* - PLUGIN_MENU_TYPE_GLOBAL:  "Plugins" menu in menu bar of main window
+	*
+	* Menu IDs are used to identify the menu item when ts3plugin_onMenuItemEvent is called
+	*
+	* The menu text is required, max length is 128 characters
+	*
+	* The icon is optional, max length is 128 characters. When not using icons, just pass an empty string.
+	* Icons are loaded from a subdirectory in the TeamSpeak client plugins folder. The subdirectory must be named like the
+	* plugin filename, without dll/so/dylib suffix
+	* e.g. for "test_plugin.dll", icon "1.png" is loaded from <TeamSpeak 3 Client install dir>\plugins\test_plugin\1.png
+	*/
+
+
+	BEGIN_CREATE_MENUS(1)
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 1, "Check For Update", "");
+	END_CREATE_MENUS;
+
+
+	/* All memory allocated in this function will be automatically released by the TeamSpeak client later by calling ts3plugin_freeMemory */
+}
+
+void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID) {
+	switch (type) {
+	case PLUGIN_MENU_TYPE_GLOBAL:
+		/* Global menu item was triggered. selectedItemID is unused and set to zero. */
+		switch (menuItemID) {
+		case 1:
+			plugin.checkForUpdate();
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
 }

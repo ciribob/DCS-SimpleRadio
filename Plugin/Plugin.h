@@ -54,6 +54,8 @@ namespace SimpleRadio
 
 		static void processMessage(const char* message);
 
+		void checkForUpdate();
+
 	private:
 		char* pluginId;
 
@@ -70,6 +72,8 @@ namespace SimpleRadio
 
 		std::thread udpCommandListener;
 
+		std::thread updateThread;
+
 		bool allowNonPlayers;
 
 		bool switchToUnicast;
@@ -83,6 +87,8 @@ namespace SimpleRadio
 		SOCKET mksocket(struct sockaddr_in *addr, bool reuse);
 
 		void UDPListener();
+
+		void UpdateCheckThread();
 
 		bool shouldSendUpdate(ClientMetaData & clientMetaData);
 
@@ -220,6 +226,21 @@ extern "C"
 	DLL_EXPORT void ts3plugin_onHotkeyEvent(const char* keyword);
 	DLL_EXPORT void ts3plugin_onHotkeyRecordedEvent(const char* keyword, const char* key);
 	DLL_EXPORT void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier);
+
+	/* Helper function to create a menu item */
+	static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, const char* text, const char* icon) {
+		struct PluginMenuItem* menuItem = (struct PluginMenuItem*)malloc(sizeof(struct PluginMenuItem));
+		menuItem->type = type;
+		menuItem->id = id;
+		strcpy_s(menuItem->text, PLUGIN_MENU_BUFSZ, text);
+		strcpy_s(menuItem->icon, PLUGIN_MENU_BUFSZ, icon);
+		return menuItem;
+	}
+
+		/* Some makros to make the code to create menu items a bit more readable */
+	#define BEGIN_CREATE_MENUS(x) const size_t sz = x + 1; size_t n = 0; *menuItems = (struct PluginMenuItem**)malloc(sizeof(struct PluginMenuItem*) * sz);
+	#define CREATE_MENU_ITEM(a, b, c, d) (*menuItems)[n++] = createMenuItem(a, b, c, d);
+	#define END_CREATE_MENUS (*menuItems)[n++] = NULL; assert(n == sz);
 }
 
 #endif
