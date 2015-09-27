@@ -7,10 +7,31 @@
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
         Topmost="True"
+        
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Opacity="1.0"
        
         Title="DCS-SimpleRadio" Height="325" Width="120">
 
     <WrapPanel Name="containerPanel">
+
+        <Button  Margin="90,0,0,0" Click="Button_Minimise">
+            <Button.Content>
+                <Grid Width="10" Height="10">
+                    <TextBlock Text="0" FontFamily="Marlett" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="3.5,0,0,3" />
+                </Grid>
+            </Button.Content>
+        </Button>
+
+        <Button Margin="2,0,0,0" Click="Button_Close">
+            <Button.Content>
+                <Grid Width="10" Height="10">
+                    <TextBlock Text="r" FontFamily="Marlett" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="0,0,0,1" />
+                </Grid>
+            </Button.Content>
+        </Button>
+  
 
         <local:RadioControlGroup x:Name="radio1" />
         <local:RadioControlGroup x:Name="radio2"/>
@@ -21,6 +42,8 @@
 
         <Ellipse  x:Name="allowNonPlayersIndicator" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" />
         <Label x:Name="allowNonPlayers" Content="Not in Game" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="90" Margin="2" Height="20" Padding="2"/>
+
+        <Slider x:Name="windowOpacitySlider"  Margin="5,0,0,0" Width="110" Minimum="0.1" Maximum="1.0" ValueChanged="windowOpacitySlider_ValueChanged" Value="1.0" ToolTip="Window Opacity" />
 
     </WrapPanel>
 </Window>

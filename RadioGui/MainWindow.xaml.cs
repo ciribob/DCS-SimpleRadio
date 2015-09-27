@@ -162,6 +162,21 @@ namespace RadioGui
             this.end = true;
         }
 
+        private void Button_Minimise(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void Button_Close(object sender, RoutedEventArgs e)
+        {
+            this.end = true;
+            Close();
+        }
+
+        private void windowOpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            this.Opacity = e.NewValue;
+        }
     }
 
 }
