@@ -1,4 +1,4 @@
--- Version 1.1.5
+-- Version 1.1.6
 SR = {}
 
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
@@ -533,7 +533,7 @@ function SR.exportRadioC101(_data)
 
     if _vhfPower == 1 then
 
-        local _tens = SR.round(SR.getKnobPosition(0, 415,{0.1,0.3},{1,3}),0.1)*10*1000000
+        local _tens = (SR.round(SR.getKnobPosition(0, 415,{0.1,0.4},{1,4}),0.1)/2.5) *10*1000000
         local _ones = SR.round(SR.getKnobPosition(0, 416,{0.0,0.9},{0,9}),0.1)*1000000
         local _tenth = SR.round(SR.getKnobPosition(0, 417,{0.0,0.9},{0,9}),0.1)*100000
         local _hundreth = SR.round(SR.getKnobPosition(0, 418,{0.0,0.3},{0,3}),0.1)*10000

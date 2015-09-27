@@ -36,7 +36,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.1.5";
+	const char* Plugin::VERSION = "1.1.6";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";

@@ -36,8 +36,7 @@ namespace RadioGui
 
         private DateTime lastUpdateTime = new DateTime(0L);
 
-        private RadioTransmit lastRadioTransmit;
-        private DateTime lastRadioTransmitTime = new DateTime(0L);
+   
 
         const double MHZ = 1000000;
 
@@ -184,10 +183,21 @@ namespace RadioGui
                             activeRadioUdpClient.Client.ReceiveTimeout = 10000;
                             var receivedResults = activeRadioUdpClient.Receive(ref remoteEndPoint);
 
-                            lastRadioTransmit = JsonConvert.DeserializeObject<RadioTransmit>(Encoding.UTF8.GetString(receivedResults));
-
-                            lastRadioTransmitTime = DateTime.Now;
-
+                            RadioTransmit lastRadioTransmit = JsonConvert.DeserializeObject<RadioTransmit>(Encoding.UTF8.GetString(receivedResults));
+                            switch (lastRadioTransmit.radio)
+                            {
+                                case 0:
+                                    radio1.setLastRadioTransmit(lastRadioTransmit);
+                                    break;
+                                case 1:
+                                    radio2.setLastRadioTransmit(lastRadioTransmit);
+                                    break;
+                                case 2:
+                                    radio3.setLastRadioTransmit(lastRadioTransmit);
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                         catch (Exception e)
                         {
@@ -209,24 +219,15 @@ namespace RadioGui
                 {
                     Thread.Sleep(100);
 
-                    //check 
-                    if (lastRadioTransmit != null )
+                    Application.Current.Dispatcher.Invoke(new Action(() =>
                     {
-                        Application.Current.Dispatcher.Invoke(new Action(() =>
-                        {
+                        radio1.repaintRadioTransmit();
+                        radio2.repaintRadioTransmit();
+                        radio3.repaintRadioTransmit();
 
-                            //check if current
-                            long elapsedTicks = DateTime.Now.Ticks - lastRadioTransmitTime.Ticks;
-                            TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
-                      
-
-                            radio1.updateRadioTransmit(lastRadioTransmit, elapsedSpan);
-                            radio2.updateRadioTransmit(lastRadioTransmit, elapsedSpan);
-                            radio3.updateRadioTransmit(lastRadioTransmit, elapsedSpan);
-
-                        }));
-                    }
+                    }));
                 }
+                
             });
 
         }

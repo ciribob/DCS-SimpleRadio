@@ -28,6 +28,10 @@ namespace RadioGui
         private bool dragging;
         private RadioUpdate lastUpdate = null;
 
+        private RadioTransmit lastActive = null;
+
+        private DateTime lastActiveTime = new DateTime(0L);
+
         public RadioControlGroup()
         {
             InitializeComponent();
@@ -213,23 +217,39 @@ namespace RadioGui
 
             }
         }
-
-        internal void updateRadioTransmit(RadioTransmit lastRadioTransmit, TimeSpan elapsedSpan)
+     
+        public void setLastRadioTransmit(RadioTransmit radio)
         {
-        
-            if (elapsedSpan.TotalSeconds > 0.5)
+            this.lastActive = radio;
+            lastActiveTime = DateTime.Now;
+        }
+
+        internal void repaintRadioTransmit()
+        {
+            if (this.lastActive == null)
             {
                 radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
             }
             else
             {
-                if(lastRadioTransmit.radio == this.radioId)
+                //check if current
+                long elapsedTicks = DateTime.Now.Ticks - lastActiveTime.Ticks;
+                TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
+
+                if (elapsedSpan.TotalSeconds > 0.5)
                 {
-                    radioFrequency.Foreground = new SolidColorBrush(Colors.White);
+                    radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
                 }
                 else
                 {
-                    radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
+                    if (this.lastActive.radio == this.radioId)
+                    {
+                        radioFrequency.Foreground = new SolidColorBrush(Colors.White);
+                    }
+                    else
+                    {
+                        radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
+                    }
                 }
             }
         }
