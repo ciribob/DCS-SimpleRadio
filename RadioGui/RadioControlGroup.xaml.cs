@@ -141,7 +141,7 @@ namespace RadioGui
         internal void update(RadioUpdate lastUpdate, TimeSpan elapsedSpan)
         {
             this.lastUpdate = lastUpdate;
-            if (elapsedSpan.Seconds > 5)
+            if (elapsedSpan.TotalSeconds > 5)
             {
                 radioActive.Fill = new SolidColorBrush(Colors.Red);
                 radioLabel.Content = "No Radio";
@@ -214,6 +214,24 @@ namespace RadioGui
             }
         }
 
-       
+        internal void updateRadioTransmit(RadioTransmit lastRadioTransmit, TimeSpan elapsedSpan)
+        {
+        
+            if (elapsedSpan.TotalSeconds > 0.5)
+            {
+                radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
+            }
+            else
+            {
+                if(lastRadioTransmit.radio == this.radioId)
+                {
+                    radioFrequency.Foreground = new SolidColorBrush(Colors.White);
+                }
+                else
+                {
+                    radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
+                }
+            }
+        }
     }
 }

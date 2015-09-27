@@ -519,6 +519,39 @@ namespace SimpleRadio
 		}
 	}
 
+	void Plugin::sendActiveRadioUpdateToGUI(int radio, boolean start)
+	{
+		try
+		{
+			SOCKET s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+			if (s == -1)
+			{
+				return;
+			}
+			SOCKADDR_IN serveraddr;
+			struct hostent *hostentry;
+
+			serveraddr.sin_family = AF_INET;
+			serveraddr.sin_port = htons(35025);
+
+			inet_pton(AF_INET, "239.255.50.10", &(serveraddr.sin_addr.s_addr));
+
+			char sbuf[1024];
+			int len = sizeof(SOCKADDR_IN);
+
+			//JSON
+			sprintf(sbuf, "{radio:%i }\r\n", radio);
+
+			sendto(s, sbuf, strlen(sbuf), 0, (SOCKADDR*)&serveraddr, len);
+			::closesocket(s);
+
+		}
+		catch (...)
+		{
+
+		}
+	}
+
 	void Plugin::onClientUpdated(uint64 serverConnectionHandlerId, anyID clientId, anyID invokerId)
 	{
 
@@ -661,6 +694,11 @@ namespace SimpleRadio
 								//not talking on the same radio as we're receving on
 							canReceive = true;
 							recievingRadio = i;
+
+							this->sendActiveRadioUpdateToGUI(i, true);
+
+							//send update
+
 							break;
 							//}
 						}
@@ -1156,11 +1194,7 @@ namespace SimpleRadio
 
 								}
 							}
-
 						}
-
-
-
 					}
 					catch (...)
 					{
@@ -1391,10 +1425,6 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 void ts3plugin_onHotkeyEvent(const char* keyword) {
 	plugin.onHotKeyEvent(keyword);
 }
-
-
-
-
 
 /*
 * Initialize plugin menus.

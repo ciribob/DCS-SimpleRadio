@@ -19,7 +19,8 @@
             MouseDown="radioFrequencyText_Click"
         	Background="Black" Foreground="Orange" Text="000.00AM"/>
         
-        <Ellipse  x:Name="radioActive" Fill="#FF9900" HorizontalAlignment="Left" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" MouseDown="radioSelectSwitch"  />
+        <Ellipse  x:Name="radioActive" Fill="#FF9900" HorizontalAlignment="Left" ToolTip="Selected Radio" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" MouseDown="radioSelectSwitch"  />
+
 
         <Button HorizontalAlignment="Center" x:Name="down10" Content="" Width="10" Height="10" Margin="25,0,0,0" ToolTip="-10MHZ" Click="down10_Click" IsEnabled="False"/>
         <Button HorizontalAlignment="Center" x:Name="down1" Content="" Width="10" Height="10" ToolTip="-1MHz" Click="down1_Click" IsEnabled="False"/>

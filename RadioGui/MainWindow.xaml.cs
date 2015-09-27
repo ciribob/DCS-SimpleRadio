@@ -28,11 +28,16 @@ namespace RadioGui
 
         private UdpClient udpClient;
 
+        private UdpClient activeRadioUdpClient;
+
         private volatile bool end;
 
         private RadioUpdate lastUpdate;
 
         private DateTime lastUpdateTime = new DateTime(0L);
+
+        private RadioTransmit lastRadioTransmit;
+        private DateTime lastRadioTransmitTime = new DateTime(0L);
 
         const double MHZ = 1000000;
 
@@ -49,7 +54,15 @@ namespace RadioGui
             radio2.radioId = 1;
           
             radio3.radioId = 2;
+
+            setupActiveRadio();
+            setupRadioStatus();
            
+
+        }
+
+        private void setupRadioStatus()
+        {
             //setup UDP
             this.udpClient = new UdpClient();
             this.udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -93,54 +106,129 @@ namespace RadioGui
             });
 
             Task.Run(() =>
-           {
+            {
 
 
-               while (!end)
-               {
-                   Thread.Sleep(100);
+                while (!end)
+                {
+                    Thread.Sleep(100);
 
                     //check 
                     if (lastUpdate != null && lastUpdate.name != null)
-                   {
-                       Application.Current.Dispatcher.Invoke(new Action(() =>
-                       {
+                    {
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
 
                             //check if current
                             long elapsedTicks = DateTime.Now.Ticks - lastUpdateTime.Ticks;
-                           TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
+                            TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
 
-                           if (lastUpdate.allowNonPlayers)
-                           {
-                               this.allowNonPlayersIndicator.Fill = new SolidColorBrush(Colors.Green);
-                               this.allowNonPlayers.Content = "Mute OFF";
-                           }
-                           else
-                           {
-                               this.allowNonPlayersIndicator.Fill = new SolidColorBrush(Colors.Red);
-                               this.allowNonPlayers.Content = "Mute ON";
-                           }
+                            if (lastUpdate.allowNonPlayers)
+                            {
+                                this.allowNonPlayersIndicator.Fill = new SolidColorBrush(Colors.Green);
+                                this.allowNonPlayers.Content = "Mute OFF";
+                            }
+                            else
+                            {
+                                this.allowNonPlayersIndicator.Fill = new SolidColorBrush(Colors.Red);
+                                this.allowNonPlayers.Content = "Mute ON";
+                            }
 
-                           if (elapsedSpan.Seconds > 5)
-                           {
-                               this.statusIndicator.Fill = new SolidColorBrush(Colors.Red);
-                               this.statusLabel.Content = "Radio Disabled";
-                           }
-                           else
-                           {
-                               this.statusIndicator.Fill = new SolidColorBrush(Colors.Green);
-                               this.statusLabel.Content = "OK";
-                           }
+                            if (elapsedSpan.TotalSeconds > 5)
+                            {
+                                this.statusIndicator.Fill = new SolidColorBrush(Colors.Red);
+                                this.statusLabel.Content = "Radio Disabled";
+                            }
+                            else
+                            {
+                                this.statusIndicator.Fill = new SolidColorBrush(Colors.Green);
+                                this.statusLabel.Content = "OK";
+                            }
 
 
-                           radio1.update(lastUpdate, elapsedSpan);
-                           radio2.update(lastUpdate, elapsedSpan);
-                           radio3.update(lastUpdate, elapsedSpan);
+                            radio1.update(lastUpdate, elapsedSpan);
+                            radio2.update(lastUpdate, elapsedSpan);
+                            radio3.update(lastUpdate, elapsedSpan);
 
-                       }));
-                   }
-               }
-           });
+                        }));
+                    }
+                }
+            });
+
+        }
+
+        private void setupActiveRadio()
+        {
+            //setup UDP
+            this.activeRadioUdpClient = new UdpClient();
+            this.activeRadioUdpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            this.activeRadioUdpClient.ExclusiveAddressUse = false; // only if you want to send/receive on same machine.
+
+            IPAddress multicastaddress = IPAddress.Parse("239.255.50.10");
+            this.activeRadioUdpClient.JoinMulticastGroup(multicastaddress);
+
+            IPEndPoint localEp = new IPEndPoint(IPAddress.Any, 35025);
+            this.activeRadioUdpClient.Client.Bind(localEp);
+
+            Task.Run(() =>
+            {
+                using (activeRadioUdpClient)
+                {
+
+                    while (!end)
+                    {
+                        try
+                        {
+                            //IPEndPoint object will allow us to read datagrams sent from any source.
+                            var remoteEndPoint = new IPEndPoint(IPAddress.Any, 35025);
+                            activeRadioUdpClient.Client.ReceiveTimeout = 10000;
+                            var receivedResults = activeRadioUdpClient.Receive(ref remoteEndPoint);
+
+                            lastRadioTransmit = JsonConvert.DeserializeObject<RadioTransmit>(Encoding.UTF8.GetString(receivedResults));
+
+                            lastRadioTransmitTime = DateTime.Now;
+
+                        }
+                        catch (Exception e)
+                        {
+                           // Console.Out.WriteLine(e.ToString());
+                        }
+
+
+                    }
+
+                    this.activeRadioUdpClient.Close();
+                }
+            });
+
+            Task.Run(() =>
+            {
+
+
+                while (!end)
+                {
+                    Thread.Sleep(100);
+
+                    //check 
+                    if (lastRadioTransmit != null )
+                    {
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
+
+                            //check if current
+                            long elapsedTicks = DateTime.Now.Ticks - lastRadioTransmitTime.Ticks;
+                            TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
+                      
+
+                            radio1.updateRadioTransmit(lastRadioTransmit, elapsedSpan);
+                            radio2.updateRadioTransmit(lastRadioTransmit, elapsedSpan);
+                            radio3.updateRadioTransmit(lastRadioTransmit, elapsedSpan);
+
+                        }));
+                    }
+                }
+            });
+
         }
 
         private void WrapPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

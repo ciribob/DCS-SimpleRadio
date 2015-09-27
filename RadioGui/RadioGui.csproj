@@ -111,6 +111,7 @@
     <Compile Include="RadioControlGroup.xaml.cs">
       <DependentUpon>RadioControlGroup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="RadioTransmit.cs" />
     <Compile Include="RadioUpdate.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
