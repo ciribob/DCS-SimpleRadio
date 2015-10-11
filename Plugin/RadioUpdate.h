@@ -11,8 +11,8 @@ namespace SimpleRadio
 	{
 	public:
 		RadioUpdate();
-		std::string serialize(bool formatted = false) const;
-
+		std::string serialize() const;
+		
 		std::string name;
 		std::string unit;
 		int selected;
@@ -20,6 +20,7 @@ namespace SimpleRadio
 		RadioInformation radios[3];
 		bool hasRadio;
 		bool allowNonPlayers;
+		bool caMode;
 	};
 };
 

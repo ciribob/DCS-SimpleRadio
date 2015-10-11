@@ -13,6 +13,7 @@ namespace SimpleRadio
 		, unit("None")
 		, selected(0)
 		, hasRadio(true)
+		, caMode(false)
 	{
 		for (int i = 0; i < 3; i++)
 		{
@@ -23,7 +24,7 @@ namespace SimpleRadio
 		}
 	}
 
-	string RadioUpdate::serialize(bool formatted) const
+	string RadioUpdate::serialize() const
 	{
 		Json::Value root;
 
@@ -32,6 +33,7 @@ namespace SimpleRadio
 		root["selected"] = this->selected;
 		root["hasRadio"] = this->hasRadio;
 		root["allowNonPlayers"] = this->allowNonPlayers; //if false, non players are muted
+		root["caMode"] = this->caMode;
 
 		Json::Value array;
 		for (int i = 0; i < 3; i++)
@@ -45,17 +47,10 @@ namespace SimpleRadio
 		}
 
 		root["radios"] = array;
-
-		if (formatted == true)
-		{
-			Json::StyledWriter writer;
-			return writer.write(root);
-		}
-		else
-		{
-			Json::FastWriter writer;
-			return writer.write(root);
-		}
+	
+		Json::FastWriter writer;
+		return writer.write(root);
+		
 	}
 
 

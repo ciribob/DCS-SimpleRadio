@@ -13,6 +13,8 @@ namespace RadioGui
             FREQUENCY=1,
             VOLUME=2,
             SELECT=3,
+            TOGGLE_MUTE_NON_RADIO = 4,
+            TOGGLE_FORCE_RADIO_ON = 5
         }
         public double freq = 1;
         public int radio;

@@ -62,6 +62,8 @@ namespace SimpleRadio
 			//Delete other things?!
 			delete[] this->pluginId;
 		}
+
+		
 	}
 
 	void Plugin::start()
@@ -299,35 +301,44 @@ namespace SimpleRadio
 		return data;
 	}
 
+	void Plugin::toggleMuteOnNonUsers()
+	{
+		this->allowNonPlayers = !this->allowNonPlayers;
+
+		if (this->allowNonPlayers)
+		{
+			this->teamspeak.printMessageToCurrentTab("Un-muting clients NOT in an aircraft");
+		}
+		else
+		{
+			this->teamspeak.printMessageToCurrentTab("Muting clients NOT in an aircraft");
+		}
+	}
+
+	void Plugin::toggleForceON() {
+		this->forceOn = !this->forceOn;
+
+		if (this->forceOn)
+		{
+			this->teamspeak.printMessageToCurrentTab("Forcing ON in Ground Mode");
+		}
+		else
+		{
+			this->teamspeak.printMessageToCurrentTab("Forcing OFF in Ground Mode");
+		}
+	}
+
 	void Plugin::onHotKeyEvent(const char * hotkeyCommand) {
 
 		if (strcmp("DCS-SR-TOGGLE-MUTE", hotkeyCommand) == 0)
 		{
-			this->allowNonPlayers = !this->allowNonPlayers;
-
-			if (this->allowNonPlayers)
-			{
-				this->teamspeak.printMessageToCurrentTab("Un-muting clients NOT in an aircraft");
-			}
-			else
-			{
-				this->teamspeak.printMessageToCurrentTab("Muting clients NOT in an aircraft");
-			}
+			this->toggleMuteOnNonUsers();
 			return;
 
 		}
 		else if (strcmp("DCS-SR-TOGGLE-FORCE-ON", hotkeyCommand) == 0)
 		{
-			this->forceOn = !this->forceOn;
-
-			if (this->forceOn)
-			{
-				this->teamspeak.printMessageToCurrentTab("Forcing ON in Ground Mode");
-			}
-			else
-			{
-				this->teamspeak.printMessageToCurrentTab("Forcing OFF in Ground Mode");
-			}
+			this->toggleForceON();
 			return;
 
 		}
@@ -476,6 +487,7 @@ namespace SimpleRadio
 		update.selected = this->myClientData.selected;
 		update.hasRadio = this->myClientData.hasRadio;
 		update.allowNonPlayers = this->allowNonPlayers;
+		update.caMode = this->forceOn;
 
 		for (int i = 0; i < 3; i++)
 		{
@@ -505,7 +517,7 @@ namespace SimpleRadio
 			int len = sizeof(SOCKADDR_IN);
 
 			//JSON Encode
-			sprintf(sbuf, "%s\r\n", update.serialize(false).c_str());
+			sprintf(sbuf, "%s\r\n", update.serialize().c_str());
 
 			//teamspeak.printMessageToCurrentTab(update.serialize(false).c_str());
 
@@ -554,7 +566,7 @@ namespace SimpleRadio
 
 	void Plugin::onClientUpdated(uint64 serverConnectionHandlerId, anyID clientId, anyID invokerId)
 	{
-
+		//Called every time and update happens on a client
 		char* bufferForMetaData;
 		DWORD error;
 
@@ -563,7 +575,7 @@ namespace SimpleRadio
 
 		anyID myID;
 		if (this->teamspeak.getClientID(serverConnectionHandlerId, &myID) != ERROR_ok) {
-
+			return;
 		}
 		else
 		{
@@ -586,7 +598,6 @@ namespace SimpleRadio
 					catch (...)
 					{
 						this->teamspeak.logMessage("Failed to parse my metadata", LogLevel_ERROR, Plugin::NAME, 0);
-
 					}
 				}
 
@@ -594,38 +605,29 @@ namespace SimpleRadio
 
 				return;
 			}
-		}
-
-		//Called every time and update happens on a client
-
-
-		if ((error = this->teamspeak.getClientVariableAsString(serverConnectionHandlerId, clientId, CLIENT_META_DATA, &bufferForMetaData)) != ERROR_ok) {
-
-		}
-		else
-		{
-
-			try {
-
-				ClientMetaData metadata = ClientMetaData::deserialize(bufferForMetaData, false);
-
-				auto ret = this->connectedClient.insert(std::pair<anyID, ClientMetaData>(clientId, metadata));
-
-				if (!ret.second)
+			else
+			{
+				if ((error = this->teamspeak.getClientVariableAsString(serverConnectionHandlerId, clientId, CLIENT_META_DATA, &bufferForMetaData)) != ERROR_ok) {
+					return;
+				}
+				else
 				{
-					this->connectedClient[clientId] = metadata;
+					try {
 
+						ClientMetaData metadata = ClientMetaData::deserialize(bufferForMetaData, false);
+
+						this->connectedClient[clientId] = metadata;
+					}
+					catch (...)
+					{
+						this->teamspeak.logMessage("Failed to parse client metadata", LogLevel_ERROR, Plugin::NAME, 0);
+
+					}
+					this->teamspeak.freeMemory(bufferForMetaData);
+					return;
 				}
 			}
-			catch (...)
-			{
-				this->teamspeak.logMessage("Failed to parse client metadata", LogLevel_ERROR, Plugin::NAME, 0);
-
-			}
 		}
-
-
-		this->teamspeak.freeMemory(bufferForMetaData);
 	}
 
 	void Plugin::onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerId, anyID clientId, short* samples, int sampleCount, int channels)
@@ -1167,17 +1169,20 @@ namespace SimpleRadio
 					{
 						ReceiveBuf[ByteReceived - 1] = 0; //add terminator
 
+						RadioUpdateCommand updateCommand = RadioUpdateCommand::deserialize(ReceiveBuf);
+
 						//only allow on FC3 aircraft
-						if (this->myClientData.hasRadio == false)
+						if (this->myClientData.hasRadio == false || updateCommand.cmdType >=4)
 						{
-							RadioUpdateCommand updateCommand = RadioUpdateCommand::deserialize(ReceiveBuf);
 
 							if (updateCommand.radio >= 0)
 							{
 								/*
-								FREQUENCY=1,
+								 FREQUENCY=1,
 								VOLUME=2,
 								SELECT=3,
+								TOGGLE_MUTE_NON_RADIO = 4,
+								TOGGLE_FORCE_RADIO_ON = 5
 								*/
 								switch (updateCommand.cmdType) {
 								case 1:
@@ -1189,6 +1194,15 @@ namespace SimpleRadio
 								case 3:
 									this->teamSpeakControlledClientData.selected = updateCommand.radio;
 									break;
+								case 4:
+									this->toggleMuteOnNonUsers();
+									this->sendUpdateToGUI();
+									break;
+								case 5:
+									this->toggleForceON();
+									this->sendUpdateToGUI();
+									break;
+
 								default:
 									break;
 
@@ -1271,6 +1285,7 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs)
 */
 int ts3plugin_init()
 {
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	try
 	{
 
