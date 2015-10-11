@@ -1,4 +1,4 @@
--- Version 1.1.7
+-- Version 1.1.7.1
 SR = {}
 
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
@@ -298,7 +298,7 @@ end
 function SR.exportRadioL39(_data)
 
     _data.radios[1].name = "R-832M"
-    _data.radios[1].frequency = SR.getRadioFrequency(20)
+    _data.radios[1].frequency = SR.getRadioFrequency(19)
     _data.radios[1].modulation = 0
     _data.radios[1].volume = SR.getRadioVolume(0, 289,{0.0,0.8},false)
 
