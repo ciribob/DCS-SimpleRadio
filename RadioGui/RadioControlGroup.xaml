@@ -5,27 +5,27 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:RadioGui"
           
-              Width="120" Height="80"
+              Width="100" Height="70"
              >
     <WrapPanel>
 
-        <Label x:Name="radioLabel" Content="No Radio" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="110" Margin="2"/>
-        <Button HorizontalAlignment="Center" x:Name="up10" Content="" Width="10" Height="10" Margin="25,0,0,0" ToolTip="+10MHz" Click="up10_Click" IsEnabled="False"/>
-        <Button HorizontalAlignment="Center" x:Name="up1" Content="" Width="10" Height="10" ToolTip="+1MHZ" Click="up1_Click" IsEnabled="False"/>
-        <Button HorizontalAlignment="Center" x:Name="up01" Content="" Width="10" Height="10" Margin="0,0,0,0" ToolTip="+0.1MHz" Click="up01_Click" IsEnabled="False"/>
+        <Label x:Name="radioLabel" Content="No Radio" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Width="100" Padding="0" Margin="0" />
+        <Button HorizontalAlignment="Center" x:Name="up10" Content="" Width="15" Height="10" Margin="20,0,0,0" ToolTip="+10MHz" Click="up10_Click" IsEnabled="False"/>
+        <Button HorizontalAlignment="Center" x:Name="up1" Content="" Width="15" Height="10" ToolTip="+1MHZ" Click="up1_Click" IsEnabled="False"/>
+        <Button HorizontalAlignment="Center" x:Name="up01" Content="" Width="15" Height="10" Margin="0,0,0,0" ToolTip="+0.1MHz" Click="up01_Click" IsEnabled="False"/>
 
-        <TextBlock x:Name="radioFrequency" HorizontalAlignment="Center"  TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="90" 
-        	Margin="2"
+        <TextBlock x:Name="radioFrequency" HorizontalAlignment="Center"  TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="80" 
+       
             MouseDown="radioFrequencyText_Click"
         	Background="Black" Foreground="Orange" Text="000.00AM"/>
         
         <Ellipse  x:Name="radioActive" Fill="#FF9900" HorizontalAlignment="Left" ToolTip="Selected Radio" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" MouseDown="radioSelectSwitch"  />
 
 
-        <Button HorizontalAlignment="Center" x:Name="down10" Content="" Width="10" Height="10" Margin="25,0,0,0" ToolTip="-10MHZ" Click="down10_Click" IsEnabled="False"/>
-        <Button HorizontalAlignment="Center" x:Name="down1" Content="" Width="10" Height="10" ToolTip="-1MHz" Click="down1_Click" IsEnabled="False"/>
-        <Button HorizontalAlignment="Center" x:Name="down01" Content="" Width="10" Height="10" Margin="0,0,0,0" ToolTip="-0.1MHz" Click="down01_Click" IsEnabled="False"/>
-        <Slider x:Name="radioVolume" Width="110" Margin="2"  Maximum="100" IsEnabled="False" Height="10" Thumb.DragCompleted="radioVolume_DragCompleted" Thumb.DragStarted="radioVolume_DragStarted" />
+        <Button HorizontalAlignment="Center" x:Name="down10" Content="" Width="15" Height="10" Margin="20,0,0,0" ToolTip="-10MHZ" Click="down10_Click" IsEnabled="False"/>
+        <Button HorizontalAlignment="Center" x:Name="down1" Content="" Width="15" Height="10" ToolTip="-1MHz" Click="down1_Click" IsEnabled="False"/>
+        <Button HorizontalAlignment="Center" x:Name="down01" Content="" Width="15" Height="10" Margin="0,0,0,0" ToolTip="-0.1MHz" Click="down01_Click" IsEnabled="False"/>
+        <Slider x:Name="radioVolume" Width="95" Margin="2"  Maximum="100" IsEnabled="False" Height="15" Thumb.DragCompleted="radioVolume_DragCompleted" Thumb.DragStarted="radioVolume_DragStarted" />
        
     </WrapPanel>
 </UserControl>

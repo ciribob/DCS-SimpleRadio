@@ -1,29 +1,21 @@
--- Version 1.1.6
+-- Version 1.1.7
 SR = {}
 
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
-                    -- set unicast to true and type "/sr switch" in the TeamSpeak chat window
+-- set unicast to true and type "/sr switch" in the TeamSpeak chat window
 
 SR.dbg = {}
 SR.logFile = io.open(lfs.writedir()..[[Logs\DCS-SimpleRadio.log]], "w")
 function SR.log(str)
-	if SR.logFile then
-		SR.logFile:write(str.."\n")
-		SR.logFile:flush()
-	end
-end
-
-function SR.shallowCopy(source, dest)
-	dest = dest or {}
-	for k, v in pairs(source) do
-		dest[k] = v
-	end
-	return dest
+    if SR.logFile then
+        SR.logFile:write(str.."\n")
+        SR.logFile:flush()
+    end
 end
 
 package.path  = package.path..";.\\LuaSocket\\?.lua"
 package.cpath = package.cpath..";.\\LuaSocket\\?.dll"
-  
+
 local socket = require("socket")
 
 local JSON = loadfile("Scripts\\JSON.lua")()
@@ -44,29 +36,26 @@ _prevExport.LuaExportAfterNextFrame = LuaExportAfterNextFrame
 
 -- Lua Export Functions
 LuaExportStart = function()
-	
-		--socket.try(UDPSendSocket:sendto("Start\n\n", "239.255.50.10", 5050))
-	
-	-- Chain previously-included export as necessary
-	if _prevExport.LuaExportStart then
-		_prevExport.LuaExportStart()
-	end
+
+    -- Chain previously-included export as necessary
+    if _prevExport.LuaExportStart then
+        _prevExport.LuaExportStart()
+    end
 end
 
 LuaExportStop = function()
-	
-	--socket.try(UDPSendSocket:sendto("End\n\n", "239.255.50.10", 5050))
-	-- Chain previously-included export as necessary
-	if _prevExport.LuaExportStop then
-		_prevExport.LuaExportStop()
-	end
+
+    -- Chain previously-included export as necessary
+    if _prevExport.LuaExportStop then
+        _prevExport.LuaExportStop()
+    end
 end
 
 LuaExportActivityNextEvent = function(tCurrent)
     local tNext = tCurrent + 0.3
 
     local _status,_result = pcall(function()
-        
+
         local _update  =
         {
             name = "",
@@ -90,8 +79,8 @@ LuaExportActivityNextEvent = function(tCurrent)
 
             _update.name =  _data.UnitName
             _update.unit = _data.Name
---            _update.pos.x = _data.Position.x
---            _update.pos.y = _data.Position.z
+            --            _update.pos.x = _data.Position.x
+            --            _update.pos.y = _data.Position.z
 
             if _update.unit == "UH-1H" then
                 _update = SR.exportRadioUH1H(_update)
@@ -99,6 +88,8 @@ LuaExportActivityNextEvent = function(tCurrent)
                 _update = SR.exportRadioKA50(_update)
             elseif _update.unit == "Mi-8MT" then
                 _update = SR.exportRadioMI8(_update)
+            elseif string.find(_update.unit, "L-39")  then
+                _update = SR.exportRadioL39(_update)
             elseif _update.unit == "A-10C" then
                 _update = SR.exportRadioA10C(_update)
             elseif _update.unit == "F-86F Sabre" then
@@ -181,7 +172,7 @@ LuaExportActivityNextEvent = function(tCurrent)
 
     -- Call original function if it exists
     if _prevExport.LuaExportAfterNextFrame then
-         _prevExport.LuaExportAfterNextFrame(tCurrent)
+        _prevExport.LuaExportAfterNextFrame(tCurrent)
     end
 
     return tNext
@@ -299,6 +290,29 @@ function SR.exportRadioMI8(_data)
     return _data
 
 
+end
+
+function SR.exportRadioL39(_data)
+
+    _data.radios[1].name = "R-832M"
+    _data.radios[1].frequency = SR.getRadioFrequency(20)
+    _data.radios[1].modulation = 0
+    _data.radios[1].volume = SR.getRadioVolume(0, 289,{0.0,0.8},false)
+
+    _data.radios[2].name = "No Radio"
+    _data.radios[2].frequency = 1.0
+    _data.radios[2].modulation = 0
+    _data.radios[2].volume =0
+
+    _data.radios[3].name = "No Radio"
+    _data.radios[3].frequency =1.0
+    _data.radios[3].modulation = 0
+    _data.radios[3].volume = 0
+
+
+    _data.selected = 0
+
+    return _data
 end
 
 
@@ -487,24 +501,24 @@ end
 
 function SR.exportRadioC101(_data)
 
---    local _count = 0
---
---    local status,result;
---
---    while(true) do
---        status,result = pcall(function(_c)
---            return SR.getRadioFrequency(_c)
---        end, _count)
---
---        if not status and _count < 1000 then
---            SR.log('ERROR: ' .. result)
---            _count = _count +1
---            result = 0.0
---        else
---            break
---        end
---
---    end
+    --    local _count = 0
+    --
+    --    local status,result;
+    --
+    --    while(true) do
+    --        status,result = pcall(function(_c)
+    --            return SR.getRadioFrequency(_c)
+    --        end, _count)
+    --
+    --        if not status and _count < 1000 then
+    --            SR.log('ERROR: ' .. result)
+    --            _count = _count +1
+    --            result = 0.0
+    --        else
+    --            break
+    --        end
+    --
+    --    end
     local MHZ = 1000000
 
     _data.radios[1].name = "UHF"
@@ -644,7 +658,7 @@ function SR.getKnobPosition(_deviceId, _arg,_minMax,_mapMinMax)
         local _val = tonumber(_device:get_argument_value(_arg))
         local _reRanged = SR.rerange(_val,_minMax,_mapMinMax)
 
-       return _reRanged
+        return _reRanged
     end
     return -1
 end

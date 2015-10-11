@@ -7,6 +7,10 @@
 #define DLL_EXPORT __declspec(dllimport)
 #endif
 
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
+
 #include <WinSock2.h>
 #include <string>
 #include <map>
@@ -46,6 +50,10 @@ namespace SimpleRadio
 
 		std::string getClientInfoData(uint64 serverConnectionHandlerId, uint64 clientId) const;
 		std::string getClientMetaData(uint64 serverConnectionHandlerId, uint64 clientId) const;
+
+		void toggleMuteOnNonUsers();
+
+		void toggleForceON();
 
 		void onClientUpdated(uint64 serverConnectionHandlerId, anyID clientId, anyID invokerId);
 		void onHotKeyEvent(const char * hotkeyCommand);

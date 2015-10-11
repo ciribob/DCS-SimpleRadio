@@ -22,7 +22,7 @@ namespace RadioTester
         public int selected = 0;
 
         public RadioInformation[] radios = new RadioInformation[3];
-        public bool hasRadio = true;
+        public bool hasRadio = false;
         public bool groundCommander = false;
   
     };

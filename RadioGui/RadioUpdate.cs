@@ -26,6 +26,7 @@ namespace RadioGui
         public RadioInformation[] radios = new RadioInformation[3];
         public bool hasRadio = false;
         public bool allowNonPlayers = true;
+        public bool caMode = false;
 
     };
 }

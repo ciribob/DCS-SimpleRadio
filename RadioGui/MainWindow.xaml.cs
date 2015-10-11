@@ -47,20 +47,20 @@ namespace RadioGui
 
             //allows click and drag anywhere on the window
             this.containerPanel.MouseLeftButtonDown += WrapPanel_MouseLeftButtonDown;
-
+          
             radio1.radioId = 0;
            
             radio2.radioId = 1;
           
             radio3.radioId = 2;
 
-            setupActiveRadio();
-            setupRadioStatus();
+            SetupActiveRadio();
+            SetupRadioStatus();
            
 
         }
 
-        private void setupRadioStatus()
+        private void SetupRadioStatus()
         {
             //setup UDP
             this.udpClient = new UdpClient();
@@ -124,24 +124,25 @@ namespace RadioGui
 
                             if (lastUpdate.allowNonPlayers)
                             {
-                                this.allowNonPlayersIndicator.Fill = new SolidColorBrush(Colors.Green);
-                                this.allowNonPlayers.Content = "Mute OFF";
+                                this.muteStatusNonUsers.Fill = new SolidColorBrush(Colors.Red);
+                                this.muteStatusNonUsers.ToolTip = "Mute Non Players OFF";
                             }
                             else
                             {
-                                this.allowNonPlayersIndicator.Fill = new SolidColorBrush(Colors.Red);
-                                this.allowNonPlayers.Content = "Mute ON";
+                                this.muteStatusNonUsers.Fill = new SolidColorBrush(Colors.Green);
+                                this.muteStatusNonUsers.ToolTip = "Mute Non Players ON";
                             }
 
-                            if (elapsedSpan.TotalSeconds > 5)
+                            if (lastUpdate.caMode)
                             {
-                                this.statusIndicator.Fill = new SolidColorBrush(Colors.Red);
-                                this.statusLabel.Content = "Radio Disabled";
+                                this.caModeStatus.Fill = new SolidColorBrush(Colors.Green);
+                                this.caModeStatus.ToolTip = "Radio ON - CA / JTAC / Spectator Mode";
+
                             }
                             else
                             {
-                                this.statusIndicator.Fill = new SolidColorBrush(Colors.Green);
-                                this.statusLabel.Content = "OK";
+                                this.caModeStatus.Fill = new SolidColorBrush(Colors.Red);
+                                this.caModeStatus.ToolTip = "Radio OFF - CA / JTAC / Spectator Mode";
                             }
 
 
@@ -156,7 +157,7 @@ namespace RadioGui
 
         }
 
-        private void setupActiveRadio()
+        private void SetupActiveRadio()
         {
             //setup UDP
             this.activeRadioUdpClient = new UdpClient();
@@ -265,6 +266,48 @@ namespace RadioGui
         private void windowOpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             this.Opacity = e.NewValue;
+        }
+
+        private void SendUDPCommand(RadioCommand.CmdType type)
+        {
+            RadioCommand update = new RadioCommand();
+            update.freq =1;
+            update.volume = 1;
+            update.radio = 0;
+            update.cmdType = type;
+
+            byte[] bytes = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(update) + "\n");
+            //multicast
+            Send("239.255.50.10", 5060, bytes);
+            //unicast
+            Send("127.0.0.1", 5061, bytes);
+            
+
+        }
+        private void Send(String ipStr, int port, byte[] bytes)
+        {
+            try
+            {
+
+                UdpClient client = new UdpClient();
+                IPEndPoint ip = new IPEndPoint(IPAddress.Parse(ipStr), port);
+
+                client.Send(bytes, bytes.Length, ip);
+                client.Close();
+            }
+            catch (Exception e) { }
+
+        }
+
+        private void Button_ToggleMute(object sender, RoutedEventArgs e)
+        {
+            SendUDPCommand(RadioCommand.CmdType.TOGGLE_MUTE_NON_RADIO);
+        }
+
+
+        private void Button_Toggle_CA_Mode(object sender, RoutedEventArgs e)
+        {
+            SendUDPCommand(RadioCommand.CmdType.TOGGLE_FORCE_RADIO_ON);
         }
     }
 
