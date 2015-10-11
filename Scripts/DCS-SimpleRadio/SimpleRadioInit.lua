@@ -37,6 +37,8 @@ _prevExport.LuaExportAfterNextFrame = LuaExportAfterNextFrame
 -- Lua Export Functions
 LuaExportStart = function()
 
+    --socket.try(UDPSendSocket:sendto("Start\n\n", "239.255.50.10", 5050))
+
     -- Chain previously-included export as necessary
     if _prevExport.LuaExportStart then
         _prevExport.LuaExportStart()
@@ -45,6 +47,7 @@ end
 
 LuaExportStop = function()
 
+    --socket.try(UDPSendSocket:sendto("End\n\n", "239.255.50.10", 5050))
     -- Chain previously-included export as necessary
     if _prevExport.LuaExportStop then
         _prevExport.LuaExportStop()
@@ -300,7 +303,7 @@ function SR.exportRadioL39(_data)
     _data.radios[1].volume = SR.getRadioVolume(0, 289,{0.0,0.8},false)
 
     _data.radios[2].name = "No Radio"
-    _data.radios[2].frequency = 1.0
+    _data.radios[2].frequency =1.0
     _data.radios[2].modulation = 0
     _data.radios[2].volume =0
 
