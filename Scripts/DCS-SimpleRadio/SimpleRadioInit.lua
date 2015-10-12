@@ -1,4 +1,4 @@
--- Version 1.1.7.1
+-- Version 1.1.8
 SR = {}
 
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
@@ -64,6 +64,7 @@ LuaExportActivityNextEvent = function(tCurrent)
             name = "",
             unit = "",
             selected = -1,
+            unitId = -1,
 
             radios =
             {
@@ -82,6 +83,7 @@ LuaExportActivityNextEvent = function(tCurrent)
 
             _update.name =  _data.UnitName
             _update.unit = _data.Name
+            _update.unitId = LoGetPlayerPlaneId()
             --            _update.pos.x = _data.Position.x
             --            _update.pos.y = _data.Position.z
 
@@ -302,18 +304,24 @@ function SR.exportRadioL39(_data)
     _data.radios[1].modulation = 0
     _data.radios[1].volume = SR.getRadioVolume(0, 289,{0.0,0.8},false)
 
-    _data.radios[2].name = "No Radio"
-    _data.radios[2].frequency =1.0
+    _data.radios[2].name = "Intercom"
+    _data.radios[2].frequency =100.0
     _data.radios[2].modulation = 0
-    _data.radios[2].volume =0
+    _data.radios[2].volume =1.0
 
     _data.radios[3].name = "No Radio"
     _data.radios[3].frequency =1.0
     _data.radios[3].modulation = 0
     _data.radios[3].volume = 0
 
+    if(SR.getButtonPosition(133) > 0.5 or SR.getButtonPosition(546) > 0.5) then
+        _data.selected = 1
+    else
+        _data.selected = 0
+    end
 
-    _data.selected = 0
+
+    --SR.log(SR.getButtonPosition(133) .." - "..  SR.getButtonPosition(546))
 
     return _data
 end
@@ -671,6 +679,13 @@ function SR.getSelectorPosition(_args,_step)
     local _num = math.abs(tonumber(string.format("%.0f", (_value) / _step)))
 
     return _num
+
+end
+
+function SR.getButtonPosition(_args)
+    local _value = GetDevice(0):get_argument_value(_args)
+
+    return _value
 
 end
 
