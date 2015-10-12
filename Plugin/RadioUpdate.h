@@ -21,6 +21,8 @@ namespace SimpleRadio
 		bool hasRadio;
 		bool allowNonPlayers;
 		bool caMode;
+
+		int unitId;
 	};
 };
 

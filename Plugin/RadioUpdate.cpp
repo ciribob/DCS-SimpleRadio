@@ -14,6 +14,7 @@ namespace SimpleRadio
 		, selected(0)
 		, hasRadio(true)
 		, caMode(false)
+		, unitId(-1)
 	{
 		for (int i = 0; i < 3; i++)
 		{
@@ -34,6 +35,7 @@ namespace SimpleRadio
 		root["hasRadio"] = this->hasRadio;
 		root["allowNonPlayers"] = this->allowNonPlayers; //if false, non players are muted
 		root["caMode"] = this->caMode;
+		root["unitId"] = this->unitId;
 
 		Json::Value array;
 		for (int i = 0; i < 3; i++)

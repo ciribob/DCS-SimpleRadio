@@ -230,6 +230,7 @@ namespace SimpleRadio
 			//do we have any valid update at all
 			if (clientInfoData.lastUpdate > 5000ull)
 			{
+				//TODO handle INTERCOM HERE
 				//no radio
 				if (clientInfoData.selected < 0)
 				{
@@ -260,7 +261,7 @@ namespace SimpleRadio
 						currentRadio.frequency = -1;
 					}
 
-
+					//TODO handle INTERCOM HERE
 					if (myID == clientId)
 					{
 						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
@@ -669,8 +670,16 @@ namespace SimpleRadio
 						//	std::ostringstream oss;
 					//oss << "Receiving On: " <<myRadio.frequency << " From "<<sendingRadio.frequency;
 						//	this->teamspeak.printMessageToCurrentTab(oss.str().c_str());
+						//handle INTERCOM
+						if (myRadio.modulation == 2 && sendingRadio.modulation == 2 && this->myClientData.unitId > 0 && talkingClient.unitId > 0 && talkingClient.unitId == this->myClientData.unitId)
+						{
+							canReceive = true;
+							recievingRadio = i;
 
-						if (myRadio.frequency == sendingRadio.frequency
+							this->sendActiveRadioUpdateToGUI(i, true);
+							break;
+						}
+						else if (myRadio.frequency == sendingRadio.frequency
 							&& myRadio.modulation == sendingRadio.modulation
 							&& myRadio.frequency > 1)
 						{
@@ -1092,6 +1101,7 @@ namespace SimpleRadio
 
 			//overrwrite selected
 			clientMetaData.selected = this->teamSpeakControlledClientData.selected;
+			clientMetaData.unitId = this->teamSpeakControlledClientData.unitId;
 
 		}
 		else
@@ -1172,6 +1182,7 @@ namespace SimpleRadio
 						RadioUpdateCommand updateCommand = RadioUpdateCommand::deserialize(ReceiveBuf);
 
 						//only allow on FC3 aircraft
+						//if CMD TYPE > 4 then its a non radio specific
 						if (this->myClientData.hasRadio == false || updateCommand.cmdType >=4)
 						{
 

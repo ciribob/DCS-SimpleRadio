@@ -23,6 +23,7 @@ namespace SimpleRadio
 		RadioInformation radio[3];
 		bool hasRadio;
 		bool groundCommander;
+		int unitId;
 	};
 };
 

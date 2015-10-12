@@ -15,6 +15,7 @@ namespace SimpleRadio
 		, selected(0)
 		, hasRadio(true)
 		, groundCommander(false)
+		, unitId(-1)
 	{
 		for (int i = 0; i < 3; i++)
 		{
@@ -32,6 +33,7 @@ namespace SimpleRadio
 		root["name"] = this->name;
 		root["unit"] = this->unit;
 		root["selected"] = this->selected;
+		root["unitId"] = this->unitId;
 
 		Json::Value array;
 		for (int i = 0; i < 3; i++)
@@ -106,6 +108,16 @@ namespace SimpleRadio
 				data.groundCommander = false;
 			}
 
+			try {
+
+				data.unitId = root["unitId"].asInt();
+			}
+			catch (...)
+			{
+				//catch older versions
+				data.unitId = -1;
+			}
+
 
 		}
 		else
@@ -165,6 +177,10 @@ namespace SimpleRadio
 			return false;
 		}
 		if (this->selected != data.selected)
+		{
+			return false;
+		}
+		if (this->unitId != data.unitId)
 		{
 			return false;
 		}

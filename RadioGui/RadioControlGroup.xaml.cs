@@ -177,7 +177,16 @@ namespace RadioGui
                     radioActive.Fill = new SolidColorBrush(Colors.Orange);
                 }
 
-                radioFrequency.Text = (lastUpdate.radios[this.radioId].frequency / MHz).ToString("0.000") + (lastUpdate.radios[this.radioId].modulation == 0 ? "AM" : "FM");
+                RadioInformation currentRadio = lastUpdate.radios[this.radioId];
+
+                if(currentRadio.modulation == 2) //intercom
+                {
+                    radioFrequency.Text = "INTERCOM";
+                }
+                else
+                {
+                    radioFrequency.Text = (currentRadio.frequency / MHz).ToString("0.000") + (currentRadio.modulation == 0 ? "AM" : "FM");
+                }
                 radioLabel.Content = lastUpdate.radios[this.radioId].name;
 
                 if (lastUpdate.hasRadio)
@@ -211,7 +220,7 @@ namespace RadioGui
 
                 if (this.dragging == false)
                 {
-                    radioVolume.Value = (lastUpdate.radios[this.radioId].volume * 100.0);
+                    radioVolume.Value = (currentRadio.volume * 100.0);
                 }
 
 
