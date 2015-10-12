@@ -306,7 +306,7 @@ function SR.exportRadioL39(_data)
 
     _data.radios[2].name = "Intercom"
     _data.radios[2].frequency =100.0
-    _data.radios[2].modulation = 0
+    _data.radios[2].modulation = 2 --Special intercom modulation
     _data.radios[2].volume =1.0
 
     _data.radios[3].name = "No Radio"
@@ -360,7 +360,6 @@ function SR.exportRadioA10C(_data)
     else
         _data.selected = -1
     end
-
 
     return _data
 end
