@@ -230,7 +230,6 @@ namespace SimpleRadio
 			//do we have any valid update at all
 			if (clientInfoData.lastUpdate > 5000ull)
 			{
-				//TODO handle INTERCOM HERE
 				//no radio
 				if (clientInfoData.selected < 0)
 				{
@@ -261,16 +260,30 @@ namespace SimpleRadio
 						currentRadio.frequency = -1;
 					}
 
-					//TODO handle INTERCOM HERE
 					if (myID == clientId)
 					{
-						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
+						//Intercom
+						if (currentRadio.modulation == 2)
+						{
+							sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio: INTERCOM\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
+						}
+						else
+						{
+							sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
+						}
 
 					}
 					else
 					{
-						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF");
-
+						//Intercom
+						if (currentRadio.modulation == 2)
+						{
+							sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio: INTERCOM\nCA Mode:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), clientInfoData.groundCommander ? "ON" : "OFF");
+						}
+						else
+						{
+							sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF");
+						}
 					}
 					strcat_s(buffer, BUFFER_SIZE, status);
 				}
@@ -665,13 +678,16 @@ namespace SimpleRadio
 
 					for (int i = 0; i < 3; i++)
 					{
-						RadioInformation myRadio = this->myClientData.radio[i];
+
+						RadioInformation &myRadio = this->myClientData.radio[i];
 
 						//	std::ostringstream oss;
 					//oss << "Receiving On: " <<myRadio.frequency << " From "<<sendingRadio.frequency;
 						//	this->teamspeak.printMessageToCurrentTab(oss.str().c_str());
-						//handle INTERCOM
-						if (myRadio.modulation == 2 && sendingRadio.modulation == 2 && this->myClientData.unitId > 0 && talkingClient.unitId > 0 && talkingClient.unitId == this->myClientData.unitId)
+						//handle INTERCOM Modulation is 2
+						if (myRadio.modulation == 2 && sendingRadio.modulation == 2 
+							&& this->myClientData.unitId > 0 && talkingClient.unitId > 0 
+							&& talkingClient.unitId == this->myClientData.unitId)
 						{
 							canReceive = true;
 							recievingRadio = i;
@@ -683,35 +699,13 @@ namespace SimpleRadio
 							&& myRadio.modulation == sendingRadio.modulation
 							&& myRadio.frequency > 1)
 						{
-
-							//if (isTalking)
-							//{
-							//	RadioInformation currentRadio = this->myClientData.radio[myClientData.selected];
-
-							//	if (currentRadio.frequency == sendingRadio.frequency && currentRadio.modulation == sendingRadio.modulation)
-							//	{
-							//		//comment in for testing
-							//		canReceive = true;
-							//	}
-							//	else
-							//	{
-							//		canReceive = true;
-							//		break;
-							//	}
-
-							//}
-							//else
-							//{
-								//not talking on the same radio as we're receving on
 							canReceive = true;
 							recievingRadio = i;
 
+							//send update
 							this->sendActiveRadioUpdateToGUI(i, true);
 
-							//send update
-
 							break;
-							//}
 						}
 					}
 				}
@@ -729,6 +723,7 @@ namespace SimpleRadio
 				}
 				else
 				{
+					//not in game anymore so can hear everyone
 					canReceive = true;
 				}
 
@@ -743,6 +738,7 @@ namespace SimpleRadio
 			}
 			else
 			{
+				//not in game anymore so can hear everyone
 				canReceive = true;
 			}
 		}
