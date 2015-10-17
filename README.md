@@ -15,10 +15,11 @@ Special thanks to Teo (ED Forums) and his GitHub Project (https://github.com/ola
     - Working Volume Control - A10C radio starts with all radio volumes at 0 - Except for the Hawk
     - Working Frequency Control
     - Maximum of 3 radios supported per aircraft
-  - FC3 Aircraft have 3 radios controllable by hotkeys or the optional DCS-SimpleRadio.exe porgram
+  - FC3 Aircraft have 3 radios controllable by hotkeys or the optional DCS-SimpleRadio.exe program
   - Stand alone optional radio status panel
   - Ability to hear others and talk to them when not currently in game or not in an aircraft (hotkey to disable this if you want)
   - Ability to force the Radio system on when spectating, Ground Commanding or JTAC
+  - L-39C Intercom Support - Private channel between from and back seat in multiplayer
  
 # Known Limitations
  - On some US radios the currently selected preset radio channel selector doesn't seem to work, as in all the frequencies are the same...
@@ -29,27 +30,22 @@ Special thanks to Teo (ED Forums) and his GitHub Project (https://github.com/ola
 
  - First download the latest release from https://github.com/ciribob/DCS-SimpleRadio/releases/latest and Download DCS-SimpleRadio.zip, (you don't need to download the sources) and extract the file to somewhere.
 
-- Run the installer for the "2015 VC Redist x86" and  "2015 VC Redist x64" package. The plugin may not work if you don't perform this step!
-    
-    NOTE: If the installer fails, try downloading the original installer from Microsoft here: http://www.microsoft.com/en-us/download/details.aspx?id=48145
+- Extract the zip file and run the Installer.exe following the instructions
 
-- If you have the 64-bit version of Teamspeak (Teamspeak EXE is called: ts3client_win64.exe):
-    
-    - Copy "DCS-SimpleRadio-x64.dll" to your 64-bit Teamspeak "Plugins" folder, located in your root TS3 folder.
+### Manual Installation
 
-- If you have the 32-bit version of Teamspeak:
- 	- Copy the "DCS-SimpleRadio-x86.dll" to your 32-bit Teamspeak "Plugins" folder.
-
-- Copy what's inside the "Scripts" folder to "C:\Users\<Your User>\Saved Games\DCS\Scripts". 
+- Open the DCS-SimpleRadio Folder
+- Copy "DCS-SimpleRadio-x64.dll" and "DCS-SimpleRadio-x86.dll"  to your Teamspeak "Plugins" folder, located in your root TS3 folder.
+- Copy what's inside the "Scripts" folder to "C:\Users\<Your User>\Saved Games\DCS\Scripts".  or "C:\Users\<Your User>\Saved Games\DCS.openbeta\Scripts" if you're using the open beta.
    When finished, your DCS "Scripts" folder should have a **folder** inside it called "DCS-SimpleRadio" and a **file** called Export.lua
 
    ****IMPORTANT**** Do NOT place it in the DCS root directory! It has to be in "C:\Users\<Your User>\Saved Games\DCS\Scripts" otherwise it will not work!
 
 - If you already have an "Export.lua" file in the "Scripts" folder: 
-	
-	---Use a text editing program such as "Notepad ++" (NOT regular Notepad!)
-	
-	---Copy the last line of my "Export.lua" to your existing "Export.lua"
+  
+  ---Use a text editing program such as "Notepad ++" (NOT regular Notepad!)
+  
+  ---Copy the last line of my "Export.lua" to your existing "Export.lua"
 
 - Open up TeamSpeak and go to Settings -> Plugins and enable the "DCS-SimpleRadio" plugin (by ticking the box).
 
@@ -120,12 +116,4 @@ I will list below the location of the Radio switch in all clickable aircraft to 
 WIP. For now this video runs through all the aircraft and their radios: https://www.youtube.com/watch?v=FFHQY0L1lGU
 
 [![YouTube Radio Run-through ](http://img.youtube.com/vi/FFHQY0L1lGU/0.jpg)](https://www.youtube.com/watch?v=FFHQY0L1lGU)
-
-
-
-#### A10 C
-##### UHF
-##### VHF
-##### FM
-##### Radio Switch
 
