@@ -1,4 +1,4 @@
--- Version 1.1.8
+-- Version 1.1.9
 SR = {}
 
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
