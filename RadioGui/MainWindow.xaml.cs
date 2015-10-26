@@ -27,16 +27,19 @@ namespace RadioGui
     {
 
         private UdpClient udpClient;
+        private const int UdpClientBroadcastPort = 35024;
 
         private UdpClient activeRadioUdpClient;
+        private const int ActiveRadioClientPort = 35025;
+
+        private UdpClient hotkeyClient;
+        private const int HotkeyClientClientPort = 35026;
 
         private volatile bool end;
 
         private RadioUpdate lastUpdate;
 
         private DateTime lastUpdateTime = new DateTime(0L);
-
-   
 
         const double MHZ = 1000000;
 
@@ -56,7 +59,8 @@ namespace RadioGui
 
             SetupActiveRadio();
             SetupRadioStatus();
-           
+
+            SetupHotKeyListener();
 
         }
 
@@ -70,7 +74,7 @@ namespace RadioGui
             IPAddress multicastaddress = IPAddress.Parse("239.255.50.10");
             udpClient.JoinMulticastGroup(multicastaddress);
 
-            IPEndPoint localEp = new IPEndPoint(IPAddress.Any, 35024);
+            IPEndPoint localEp = new IPEndPoint(IPAddress.Any, UdpClientBroadcastPort);
             this.udpClient.Client.Bind(localEp);
 
             Task.Run(() =>
@@ -83,7 +87,7 @@ namespace RadioGui
                         try
                         {
                             //IPEndPoint object will allow us to read datagrams sent from any source.
-                            var remoteEndPoint = new IPEndPoint(IPAddress.Any, 35024);
+                            var remoteEndPoint = new IPEndPoint(IPAddress.Any, UdpClientBroadcastPort);
                             udpClient.Client.ReceiveTimeout = 10000;
                             var receivedResults = udpClient.Receive(ref remoteEndPoint);
 
@@ -167,7 +171,7 @@ namespace RadioGui
             IPAddress multicastaddress = IPAddress.Parse("239.255.50.10");
             this.activeRadioUdpClient.JoinMulticastGroup(multicastaddress);
 
-            IPEndPoint localEp = new IPEndPoint(IPAddress.Any, 35025);
+            IPEndPoint localEp = new IPEndPoint(IPAddress.Any, ActiveRadioClientPort);
             this.activeRadioUdpClient.Client.Bind(localEp);
 
             Task.Run(() =>
@@ -180,7 +184,7 @@ namespace RadioGui
                         try
                         {
                             //IPEndPoint object will allow us to read datagrams sent from any source.
-                            var remoteEndPoint = new IPEndPoint(IPAddress.Any, 35025);
+                            var remoteEndPoint = new IPEndPoint(IPAddress.Any, ActiveRadioClientPort);
                             activeRadioUdpClient.Client.ReceiveTimeout = 10000;
                             var receivedResults = activeRadioUdpClient.Receive(ref remoteEndPoint);
 
@@ -231,6 +235,68 @@ namespace RadioGui
                 
             });
 
+        }
+
+        private void SetupHotKeyListener()
+        {
+            //setup UDP
+            this.hotkeyClient = new UdpClient();
+            this.hotkeyClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            this.hotkeyClient.ExclusiveAddressUse = false; // only if you want to send/receive on same machine.
+
+            IPAddress multicastaddress = IPAddress.Parse("239.255.50.10");
+            this.hotkeyClient.JoinMulticastGroup(multicastaddress);
+
+            IPEndPoint localEp = new IPEndPoint(IPAddress.Any, HotkeyClientClientPort);
+            this.hotkeyClient.Client.Bind(localEp);
+
+            Task.Run(() =>
+            {
+                using (hotkeyClient)
+                {
+
+                    while (!end)
+                    {
+                        try
+                        {
+                            //IPEndPoint object will allow us to read datagrams sent from any source.
+                            var remoteEndPoint = new IPEndPoint(IPAddress.Any, HotkeyClientClientPort);
+                            hotkeyClient.Client.ReceiveTimeout = 10000;
+                            var receivedResults = hotkeyClient.Receive(ref remoteEndPoint);
+
+                            var hotKeyStr =  System.Text.Encoding.UTF8.GetString(receivedResults).Trim();
+
+                            if(hotKeyStr.Contains("DCS-SR-TOGGLE-STATUS"))
+                            {
+                                Application.Current.Dispatcher.Invoke(new Action(() =>
+                                {
+
+                                    if (this.WindowState == WindowState.Normal)
+                                    {
+
+                                        this.WindowState = WindowState.Minimized;
+                                    }
+                                    else
+                                    {
+                                        this.WindowState = WindowState.Normal;
+                                    }
+
+                                }));
+
+                            
+                               
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            // Console.Out.WriteLine(e.ToString());
+                        }
+                    }
+
+                    this.hotkeyClient.Close();
+                }
+            });
         }
 
         private void WrapPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

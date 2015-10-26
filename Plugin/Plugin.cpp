@@ -343,6 +343,8 @@ namespace SimpleRadio
 	}
 
 	void Plugin::onHotKeyEvent(const char * hotkeyCommand) {
+	
+		this->sendHotKeyToGUI(hotkeyCommand);
 
 		if (strcmp("DCS-SR-TOGGLE-MUTE", hotkeyCommand) == 0)
 		{
@@ -567,6 +569,37 @@ namespace SimpleRadio
 
 			//JSON
 			sprintf(sbuf, "{radio:%i }\r\n", radio);
+
+			sendto(s, sbuf, strlen(sbuf), 0, (SOCKADDR*)&serveraddr, len);
+			::closesocket(s);
+
+		}
+		catch (...)
+		{
+
+		}
+	}
+	void Plugin::sendHotKeyToGUI(const char * hotkey)
+	{
+		try
+		{
+			SOCKET s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+			if (s == -1)
+			{
+				return;
+			}
+			SOCKADDR_IN serveraddr;
+			struct hostent *hostentry;
+
+			serveraddr.sin_family = AF_INET;
+			serveraddr.sin_port = htons(35026);
+
+			inet_pton(AF_INET, "239.255.50.10", &(serveraddr.sin_addr.s_addr));
+
+			char sbuf[128];
+			int len = sizeof(SOCKADDR_IN);
+
+			sprintf(sbuf, "%s\n", hotkey);
 
 			sendto(s, sbuf, strlen(sbuf), 0, (SOCKADDR*)&serveraddr, len);
 			::closesocket(s);
@@ -1417,7 +1450,7 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	/* Register hotkeys giving a keyword and a description.
 	* The keyword will be later passed to ts3plugin_onHotkeyEvent to identify which hotkey was triggered.
 	* The description is shown in the clients hotkey dialog. */
-	BEGIN_CREATE_HOTKEYS(14);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
+	BEGIN_CREATE_HOTKEYS(15);  /* Create 15 hotkeys. Size must be correct for allocating memory. */
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select UHF AM");
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select VHF AM");
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select FM");
@@ -1439,6 +1472,8 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 
 	CREATE_HOTKEY("DCS-SR-VOLUME-10-UP", "VOLUME Up - 10%");
 	CREATE_HOTKEY("DCS-SR-VOLUME-10-DOWN", "VOLUME Down - 10%");
+
+	CREATE_HOTKEY("DCS-SR-TOGGLE-STATUS", "Show/Hide Radio Status Window");
 
 	END_CREATE_HOTKEYS;
 

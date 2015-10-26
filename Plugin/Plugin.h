@@ -108,6 +108,8 @@ namespace SimpleRadio
 
 		void sendActiveRadioUpdateToGUI(int radio, boolean start);
 
+		void sendHotKeyToGUI(const char * hotkey);
+
 	};
 };
 
