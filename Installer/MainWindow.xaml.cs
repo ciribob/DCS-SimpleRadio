@@ -124,7 +124,7 @@ namespace Installer
         {
             foreach (Process clsProcess in Process.GetProcesses())
             {
-                if (clsProcess.ProcessName.ToLower().Contains("dcs-simpleradio"))
+                if (clsProcess.ProcessName.ToLower().Equals("dcs-simpleradio"))
                 {
                     return true;
                 }
