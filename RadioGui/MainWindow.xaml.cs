@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -48,6 +49,11 @@ namespace RadioGui
 
             InitializeComponent();
 
+            if(Is_SimpleRadio_running())
+            {
+                Close();
+            }
+
             //allows click and drag anywhere on the window
             this.containerPanel.MouseLeftButtonDown += WrapPanel_MouseLeftButtonDown;
           
@@ -62,6 +68,24 @@ namespace RadioGui
 
             SetupHotKeyListener();
 
+        }
+
+        /// <summary>
+        /// Only allow one instance of SimpleRadio
+        /// </summary>
+        /// <returns></returns>
+        private bool Is_SimpleRadio_running()
+        {
+            int i = 0;
+            foreach (Process clsProcess in Process.GetProcesses())
+            {
+                if (clsProcess.ProcessName.ToLower().Equals("dcs-simpleradio"))
+                {
+                    i++;
+                }
+            }
+
+            return i > 1;
         }
 
         private void SetupRadioStatus()

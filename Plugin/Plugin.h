@@ -64,6 +64,8 @@ namespace SimpleRadio
 
 		void checkForUpdate();
 
+		void launchOverlay();
+
 	private:
 		char* pluginId;
 

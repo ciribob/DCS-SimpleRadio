@@ -11,6 +11,7 @@
 #include "RadioUpdate.h"
 #include "RadioUpdateCommand.h"
 #include "json/json.h"
+#include "RegHelper.h"
 
 #include <tchar.h>
 #include <winsock2.h>
@@ -814,6 +815,33 @@ namespace SimpleRadio
 		this->updateThread = thread(&Plugin::UpdateCheckThread, this);
 	}
 
+	void Plugin::launchOverlay()
+	{
+		//find registry entry
+
+		string path = RegHelper().readSRPath();
+
+		if (path != "")
+		{
+			path = path + "\\DCS-SimpleRadio.exe";
+		
+			std::wstring exePath(path.begin(), path.end());
+			LPCWSTR exePathWSTR = exePath.c_str();
+
+			ShellExecute(NULL, L"open", exePathWSTR,
+				NULL, NULL, SW_SHOWNORMAL);
+		}
+		else
+		{
+			MessageBox(
+				NULL,
+				(LPCWSTR)L"Couldn't Find DCS-SimpleRadio.exe! Reinstall or Launch Manually",
+				(LPCWSTR)L"Error",
+				MB_ICONWARNING
+				);
+		}
+	}
+
 	int Plugin::recvfromTimeOutUDP(SOCKET socket, long sec, long usec)
 	{
 		// Setup timeval variable
@@ -1508,8 +1536,9 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	*/
 
 
-	BEGIN_CREATE_MENUS(1)
+	BEGIN_CREATE_MENUS(2)
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 1, "Check For Update", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 2, "Show Radio Status", "");
 	END_CREATE_MENUS;
 
 
@@ -1523,6 +1552,9 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 		switch (menuItemID) {
 		case 1:
 			plugin.checkForUpdate();
+			break;
+		case 2:
+			plugin.launchOverlay();
 			break;
 		default:
 			break;

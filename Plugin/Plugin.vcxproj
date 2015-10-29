@@ -346,6 +346,7 @@
     <ClInclude Include="RadioInformation.h" />
     <ClInclude Include="RadioUpdate.h" />
     <ClInclude Include="RadioUpdateCommand.h" />
+    <ClInclude Include="RegHelper.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ts3_functions.h" />
     <ClInclude Include="UDPDiscovery.h" />
@@ -356,6 +357,7 @@
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="RadioUpdate.cpp" />
     <ClCompile Include="RadioUpdateCommand.cpp" />
+    <ClCompile Include="RegHelper.cpp" />
     <ClCompile Include="UDPDiscovery.cpp" />
   </ItemGroup>
   <ItemGroup>
