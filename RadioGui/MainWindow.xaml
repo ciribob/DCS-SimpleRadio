@@ -4,50 +4,35 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RadioGui"
-        mc:Ignorable="d"
-        ResizeMode="CanMinimize"
+      
         Topmost="True"
-        
-        WindowStyle="None"
-        AllowsTransparency="True"
-        Opacity="1.0"
-       
-        Title="DCS-SimpleRadio" Height="285" Width="100">
+        ResizeMode="CanResizeWithGrip"
+     
+        Name="myMainWindow"
+        Title="DCS-SimpleRadio" MinHeight="285" MinWidth="140" Height="285" Width="140">
 
-    <WrapPanel Name="containerPanel">
+    <WrapPanel Name="containerPanel" SizeChanged="containerPanel_SizeChanged" Loaded="Window_Loaded" >
 
+        <WrapPanel.LayoutTransform>
+            <ScaleTransform x:Name="ApplicationScaleTransform"
+                        CenterX="0"
+                        CenterY="0"
+                        ScaleX="{Binding ElementName=myMainWindow, Path=ScaleValue}"
+                        ScaleY="{Binding ElementName=myMainWindow, Path=ScaleValue}" />
+        </WrapPanel.LayoutTransform>
 
-        <Button  Margin="70,0,0,0" Click="Button_Minimise">
-            <Button.Content>
-                <Grid Width="10" Height="10">
-                    <TextBlock Text="0" FontFamily="Marlett" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="3.5,0,0,3" />
-                </Grid>
-            </Button.Content>
-        </Button>
-
-        <Button Margin="2,0,0,0" Click="Button_Close">
-            <Button.Content>
-                <Grid Width="10" Height="10">
-                    <TextBlock Text="r" FontFamily="Marlett" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="0,0,0,1" />
-                </Grid>
-            </Button.Content>
-        </Button>
-  
 
         <local:RadioControlGroup x:Name="radio1" />
-        <Separator Margin="0" Width="100"/>
+        <Separator Margin="0" Width="135"/>
         <local:RadioControlGroup x:Name="radio2"/>
-        <Separator Margin="0" Width="100"/>
-        <local:RadioControlGroup x:Name="radio3"/>
-        <Separator Margin="0" Width="100"/>
+        <Separator Margin="0" Width="135"/>
+        <local:RadioControlGroup x:Name="radio3" />
+        <Separator Margin="0" Width="135"/>
 
         <Button Content="Mute No SR" ToolTip="Mute / Unmute Non SimpleRadio Users" FontSize="10" Width="80" Click="Button_ToggleMute"></Button>
         <Ellipse  x:Name="muteStatusNonUsers" Fill="Red" HorizontalAlignment="Left" ToolTip="Non Players Mute Status" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2" />
         <Button Content="Toggle CA Mode" ToolTip="Toggles the Radio in CA / Spectator / JTAC " FontSize="10" Width="80" Click="Button_Toggle_CA_Mode"></Button>
         <Ellipse  x:Name="caModeStatus" Fill="Red" HorizontalAlignment="Left" ToolTip="CA Mode Status" Height="12" Stroke="Black" VerticalAlignment="Center" Width="12" Margin="2"  />
-
-        <Slider x:Name="windowOpacitySlider"  Margin="5,0,0,0" Width="90" Minimum="0.1" Maximum="1.0" ValueChanged="windowOpacitySlider_ValueChanged" Value="1.0" ToolTip="Window Opacity" />
-   
 
     </WrapPanel>
 </Window>

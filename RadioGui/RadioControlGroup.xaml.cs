@@ -237,7 +237,7 @@ namespace RadioGui
         {
             if (this.lastActive == null)
             {
-                radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
+                radioFrequency.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00FF00"));
             }
             else
             {
@@ -247,7 +247,7 @@ namespace RadioGui
 
                 if (elapsedSpan.TotalSeconds > 0.5)
                 {
-                    radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
+                    radioFrequency.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00FF00"));
                 }
                 else
                 {
@@ -257,7 +257,7 @@ namespace RadioGui
                     }
                     else
                     {
-                        radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
+                        radioFrequency.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00FF00"));
                     }
                 }
             }

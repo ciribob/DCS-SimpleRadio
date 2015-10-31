@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -26,6 +28,15 @@ namespace RadioGui
     /// </summary>
     public partial class MainWindow : Window
     {
+        [DllImport("user32.dll")]
+        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+        [DllImport("user32.dll")]
+        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        private const int GWL_STYLE = -16;
+
+        private const int WS_MAXIMIZEBOX = 0x10000; //maximize button
+        private const int WS_MINIMIZEBOX = 0x20000; //minimize button
 
         private UdpClient udpClient;
         private const int UdpClientBroadcastPort = 35024;
@@ -44,16 +55,21 @@ namespace RadioGui
 
         const double MHZ = 1000000;
 
+        private double aspectRatio;
+
         public MainWindow()
         {
 
             InitializeComponent();
+           
 
-            if(Is_SimpleRadio_running())
+            this.SourceInitialized += MainWindow_SourceInitialized;
+
+            if (Is_SimpleRadio_running())
             {
                 Close();
             }
-
+         
             //allows click and drag anywhere on the window
             this.containerPanel.MouseLeftButtonDown += WrapPanel_MouseLeftButtonDown;
           
@@ -69,6 +85,12 @@ namespace RadioGui
             SetupHotKeyListener();
 
         }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            aspectRatio = this.ActualWidth / this.ActualHeight;
+        }
+
 
         /// <summary>
         /// Only allow one instance of SimpleRadio
@@ -398,6 +420,95 @@ namespace RadioGui
         private void Button_Toggle_CA_Mode(object sender, RoutedEventArgs e)
         {
             SendUDPCommand(RadioCommand.CmdType.TOGGLE_FORCE_RADIO_ON);
+        }
+
+        private void containerPanel_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            
+                CalculateScale();
+        }
+
+        #region ScaleValue Depdency Property
+        public static readonly DependencyProperty ScaleValueProperty = DependencyProperty.Register("ScaleValue", typeof(double), typeof(MainWindow), new UIPropertyMetadata(1.0, new PropertyChangedCallback(OnScaleValueChanged), new CoerceValueCallback(OnCoerceScaleValue)));
+
+        private static object OnCoerceScaleValue(DependencyObject o, object value)
+        {
+            MainWindow mainWindow = o as MainWindow;
+            if (mainWindow != null)
+                return mainWindow.OnCoerceScaleValue((double)value);
+            else
+                return value;
+        }
+
+        private static void OnScaleValueChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
+        {
+            MainWindow mainWindow = o as MainWindow;
+            if (mainWindow != null)
+                mainWindow.OnScaleValueChanged((double)e.OldValue, (double)e.NewValue);
+        }
+
+        protected virtual double OnCoerceScaleValue(double value)
+        {
+            if (double.IsNaN(value))
+                return 1.0f;
+
+            value = Math.Max(0.1, value);
+            return value;
+        }
+
+        protected virtual void OnScaleValueChanged(double oldValue, double newValue)
+        {
+
+        }
+
+        public double ScaleValue
+        {
+            get
+            {
+                return (double)GetValue(ScaleValueProperty);
+            }
+            set
+            {
+                SetValue(ScaleValueProperty, value);
+            }
+        }
+        #endregion
+
+     
+
+        private void CalculateScale()
+        {
+            double yScale = ActualHeight / 285f;
+            double xScale = ActualWidth / 140f;
+            double value = Math.Min(xScale, yScale);
+            ScaleValue = (double)OnCoerceScaleValue(myMainWindow, value);
+        }
+
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+
+            if (sizeInfo.WidthChanged) this.Width = sizeInfo.NewSize.Height * aspectRatio;
+           else this.Height = sizeInfo.NewSize.Width / aspectRatio;
+
+            Console.WriteLine(this.Height +" width:"+ this.Width);
+
+        }
+
+        private IntPtr _windowHandle;
+        private void MainWindow_SourceInitialized(object sender, EventArgs e)
+        {
+            _windowHandle = new WindowInteropHelper(this).Handle;
+
+            //disable the maximize button
+            DisableMaximizeButton();
+        }
+
+        protected void DisableMaximizeButton()
+        {
+            if (_windowHandle == null)
+                throw new InvalidOperationException("The window has not yet been completely initialized");
+
+            SetWindowLong(_windowHandle, GWL_STYLE, GetWindowLong(_windowHandle, GWL_STYLE) & ~WS_MAXIMIZEBOX);
         }
     }
 
