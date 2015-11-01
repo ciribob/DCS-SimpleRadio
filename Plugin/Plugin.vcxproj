@@ -335,6 +335,29 @@
   <ItemGroup>
     <ClInclude Include="clientlib_publicdefinitions.h" />
     <ClInclude Include="ClientMetaData.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Bessel.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Biquad.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Butterworth.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Cascade.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\ChebyshevI.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\ChebyshevII.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Common.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Custom.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Design.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Dsp.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Elliptic.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Filter.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Layout.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Legendre.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\MathSupplement.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Params.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\PoleFilter.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\RBJ.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\RootFinder.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\SmoothedFilter.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\State.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Types.h" />
+    <ClInclude Include="DSPFilters\include\DspFilters\Utilities.h" />
     <ClInclude Include="json\json-forwards.h" />
     <ClInclude Include="json\json.h" />
     <ClInclude Include="Plugin.h" />
@@ -353,6 +376,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClientMetaData.cpp" />
+    <ClCompile Include="DSPFilters\source\Bessel.cpp" />
+    <ClCompile Include="DSPFilters\source\Biquad.cpp" />
+    <ClCompile Include="DSPFilters\source\Butterworth.cpp" />
+    <ClCompile Include="DSPFilters\source\Cascade.cpp" />
+    <ClCompile Include="DSPFilters\source\ChebyshevI.cpp" />
+    <ClCompile Include="DSPFilters\source\ChebyshevII.cpp" />
+    <ClCompile Include="DSPFilters\source\Custom.cpp" />
+    <ClCompile Include="DSPFilters\source\Design.cpp" />
+    <ClCompile Include="DSPFilters\source\Documentation.cpp" />
+    <ClCompile Include="DSPFilters\source\Elliptic.cpp" />
+    <ClCompile Include="DSPFilters\source\Filter.cpp" />
+    <ClCompile Include="DSPFilters\source\Legendre.cpp" />
+    <ClCompile Include="DSPFilters\source\Param.cpp" />
+    <ClCompile Include="DSPFilters\source\PoleFilter.cpp" />
+    <ClCompile Include="DSPFilters\source\RBJ.cpp" />
+    <ClCompile Include="DSPFilters\source\RootFinder.cpp" />
+    <ClCompile Include="DSPFilters\source\State.cpp" />
     <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="RadioUpdate.cpp" />

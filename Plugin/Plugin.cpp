@@ -12,6 +12,7 @@
 #include "RadioUpdateCommand.h"
 #include "json/json.h"
 #include "RegHelper.h"
+#include "DSPFilters\include\DspFilters\Dsp.h"
 
 #include <tchar.h>
 #include <winsock2.h>
@@ -24,6 +25,9 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "Wininet")
+
+#define SAMPLE_RATE 48000
+#define NOISE_LEVEL 5 //in 0.5% of signal to noise
 
 //239.255.50.10
 //5050
@@ -684,9 +688,9 @@ namespace SimpleRadio
 		bool canReceive = false;
 		int recievingRadio = -1;
 
-		std::string str = "Samples:"+ std::to_string(sampleCount) + " Channesl: "+ std::to_string(channels);
+		/*std::string str = "Samples:"+ std::to_string(sampleCount) + " Channesl: "+ std::to_string(channels);
 
-		this->teamspeak.printMessageToCurrentTab(str.c_str());
+		this->teamspeak.printMessageToCurrentTab(str.c_str());*/
 
 		ClientMetaData talkingClient;
 		try
@@ -807,18 +811,28 @@ namespace SimpleRadio
 			}
 		}
 
-		//DEBUG
+	/*	Dsp::SimpleFilter<Dsp::RBJ::HighPass, 1> filterSpeakerHP;
+		Dsp::SimpleFilter<Dsp::RBJ::LowPass, 1> filterSpeakerLP;
+
+		filterSpeakerHP.setup(SAMPLE_RATE, 520, 0.97);
+		filterSpeakerLP.setup(SAMPLE_RATE, 1300, 1.0);*/
+
+
+		//DEBUG ANNOYING HISS! :D
 		for (int i = 0; i < sampleCount; i++)
 		{
 			for (int j = 0; j < channels; j++)
 			{
-		
-				std::string str2 = "Sample:" + std::to_string(samples[i * channels + j]) ;
-
-				this->teamspeak.printMessageToCurrentTab(str2.c_str());
+				if (rand() % 1000 < NOISE_LEVEL)
+				{
+					samples[i * channels + j] = SHRT_MAX /5;
+				}
+				
 			}
 				
 		}
+
+	
 		
 	}
 
