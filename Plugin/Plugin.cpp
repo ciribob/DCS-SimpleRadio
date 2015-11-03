@@ -684,6 +684,10 @@ namespace SimpleRadio
 		bool canReceive = false;
 		int recievingRadio = -1;
 
+		std::string str = "Samples:"+ std::to_string(sampleCount) + " Channesl: "+ std::to_string(channels);
+
+		this->teamspeak.printMessageToCurrentTab(str.c_str());
+
 		ClientMetaData talkingClient;
 		try
 		{
@@ -802,6 +806,20 @@ namespace SimpleRadio
 					samples[i * channels + j] = samples[i * channels + j] * (myRadio.volume);
 			}
 		}
+
+		//DEBUG
+		for (int i = 0; i < sampleCount; i++)
+		{
+			for (int j = 0; j < channels; j++)
+			{
+		
+				std::string str2 = "Sample:" + std::to_string(samples[i * channels + j]) ;
+
+				this->teamspeak.printMessageToCurrentTab(str2.c_str());
+			}
+				
+		}
+		
 	}
 
 	void Plugin::checkForUpdate()
