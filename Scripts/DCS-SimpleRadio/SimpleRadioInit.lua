@@ -68,9 +68,9 @@ LuaExportActivityNextEvent = function(tCurrent)
 
             radios =
             {
-                { id = 1, name = "init", frequency = 0, modulation = 0, volume = 1.0 },
-                { id = 2, name = "init", frequency = 0, modulation = 0, volume = 1.0 },
-                { id = 3, name = "init", frequency = 0, modulation = 0, volume = 1.0 }
+                { id = 1, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1, secondaryModulation = 0 },
+                { id = 2, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1, secondaryModulation = 0 },
+                { id = 3, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1, secondaryModulation = 0 }
             },
             hasRadio = true,
             groundCommander = false,
@@ -118,10 +118,15 @@ LuaExportActivityNextEvent = function(tCurrent)
                 _update.radios[1].name = "FC3 UHF"
                 _update.radios[1].frequency = 251.0*1000000
                 _update.radios[1].modulation = 0
+                _update.radios[1].secondaryFrequency = 243.0*1000000
+                _update.radios[1].secondaryModulation = 0
 
                 _update.radios[2].name = "FC3 VHF"
                 _update.radios[2].frequency = 124.8*1000000
-                _update.radios[2].modulation = 0
+                _update.radios[2].modulation = 121.5*1000000
+                _update.radios[2].secondaryFrequency = 121.5*1000000
+                _update.radios[2].secondaryModulation = 0
+               
 
                 _update.radios[3].name = "FC3 FM"
                 _update.radios[3].frequency = 30.0*1000000
@@ -152,9 +157,9 @@ LuaExportActivityNextEvent = function(tCurrent)
                 selected = 0,
                 radios =
                 {
-                    { id = 1, name = "CA UHF", frequency = 251.0*1000000, modulation = 0,volume = 1.0 },
-                    { id = 2, name = "CA VHF", frequency = 124.8*1000000, modulation = 0,volume = 1.0 },
-                    { id = 3, name = "CA FM", frequency = 30.0*1000000, modulation = 1,volume = 1.0 }
+                    { id = 1, name = "CA UHF", frequency = 251.0*1000000, modulation = 0,volume = 1.0,secondaryFrequency = 243.0*1000000, secondaryModulation = 0 },
+                    { id = 2, name = "CA VHF", frequency = 124.8*1000000, modulation = 0,volume = 1.0,secondaryFrequency = 121.5*1000000, secondaryModulation = 0 },
+                    { id = 3, name = "CA FM", frequency = 30.0*1000000, modulation = 1,volume = 1.0,secondaryFrequency = 1, secondaryModulation = 0 }
                 },
                 hasRadio = false,
                 groundCommander = true
