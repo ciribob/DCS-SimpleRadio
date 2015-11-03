@@ -117,9 +117,32 @@ namespace SimpleRadio
 		{
 			this->switchToUnicast = false;
 		}
+
+		int useFilters = GetPrivateProfileInt(_T("FILTERS"), _T("filter"), 0, this->getConfigPath());
+
+		if (useFilters == 1)
+		{
+			this->filter = true;
+		}
+		else
+		{
+			this->filter = false;
+		}
+
+		if (this->filter)
+		{
+			this->teamspeak.setPluginMenuEnabled(this->pluginId, 3, 0);
+			this->teamspeak.setPluginMenuEnabled(this->pluginId, 4, 1);
+		}
+		else
+		{
+			this->teamspeak.setPluginMenuEnabled(this->pluginId, 3, 1);
+			this->teamspeak.setPluginMenuEnabled(this->pluginId, 4, 0);
+		}
 	}
 
-	void Plugin::writeSettings(bool unicast)
+
+	void Plugin::writeUnicastSetting(bool unicast)
 	{
 		if (unicast == 1)
 		{
@@ -133,6 +156,22 @@ namespace SimpleRadio
 		//refresh after writing
 		this->readSettings();
 
+	}
+
+	void Plugin::writeFilterSetting(bool filterSetting) {
+		if (filterSetting == 1)
+		{
+			WritePrivateProfileString(_T("FILTERS"), _T("filter"), _T("1"), this->getConfigPath());
+			this->teamspeak.printMessageToCurrentTab("Radio Effects Enabled");
+		}
+		else
+		{
+			WritePrivateProfileString(_T("FILTERS"), _T("filter"), _T("0"), this->getConfigPath());
+			this->teamspeak.printMessageToCurrentTab("Radio Effects Disabled");
+		}
+
+		//refresh after writing
+		this->readSettings();
 	}
 
 	void Plugin::stop()
@@ -181,13 +220,13 @@ namespace SimpleRadio
 		{
 			if (this->switchToUnicast)
 			{
-				this->writeSettings(false);
+				this->writeUnicastSetting(false);
 
 				this->teamspeak.printMessageToCurrentTab("Switching to Multicast");
 			}
 			else
 			{
-				this->writeSettings(true);
+				this->writeUnicastSetting(true);
 				this->teamspeak.printMessageToCurrentTab("Switching to Unicast");
 			}
 
@@ -196,7 +235,13 @@ namespace SimpleRadio
 			this->start();
 
 			this->teamspeak.printMessageToCurrentTab("Switched");
-			//	this->teamspeak.printMessageToCurrentTab(this->getConfigPath());
+			
+			return true;
+		}
+		else if (strcmp(command, "filter") == 0)
+		{
+			this->writeFilterSetting(!this->filter);
+			this->teamspeak.printMessageToCurrentTab("Filter Toggle");
 
 			return true;
 		}
@@ -688,9 +733,8 @@ namespace SimpleRadio
 		bool canReceive = false;
 		int recievingRadio = -1;
 
-		/*std::string str = "Samples:"+ std::to_string(sampleCount) + " Channesl: "+ std::to_string(channels);
-
-		this->teamspeak.printMessageToCurrentTab(str.c_str());*/
+	//	std::string str = "Samples:"+ std::to_string(sampleCount) + " Channesl: "+ std::to_string(channels);
+		//this->teamspeak.printMessageToCurrentTab(str.c_str());
 
 		ClientMetaData talkingClient;
 		try
@@ -790,8 +834,7 @@ namespace SimpleRadio
 
 			for (int i = 0; i < sampleCount; i++)
 			{
-				for (int j = 0; j < channels; j++)
-					samples[i * channels + j] = 0.0f;
+				samples[i] = 0.0f;
 			}
 
 			/*	for (int i = 0; i < sampleCount; ++i)
@@ -806,34 +849,44 @@ namespace SimpleRadio
 			//do volume control
 			for (int i = 0; i < sampleCount; i++)
 			{
-				for (int j = 0; j < channels; j++)
-					samples[i * channels + j] = samples[i * channels + j] * (myRadio.volume);
+				samples[i] = samples[i] * (myRadio.volume);
 			}
-		}
 
-	/*	Dsp::SimpleFilter<Dsp::RBJ::HighPass, 1> filterSpeakerHP;
-		Dsp::SimpleFilter<Dsp::RBJ::LowPass, 1> filterSpeakerLP;
-
-		filterSpeakerHP.setup(SAMPLE_RATE, 520, 0.97);
-		filterSpeakerLP.setup(SAMPLE_RATE, 1300, 1.0);*/
-
-
-		//DEBUG ANNOYING HISS! :D
-		for (int i = 0; i < sampleCount; i++)
-		{
-			for (int j = 0; j < channels; j++)
+			//apply audio filter?
+			if (this->filter)
 			{
-				if (rand() % 1000 < NOISE_LEVEL)
-				{
-					samples[i * channels + j] = SHRT_MAX /5;
-				}
-				
-			}
-				
-		}
+			//	this->teamspeak.printMessageToCurrentTab("Filtering!");
 
-	
-		
+				Dsp::SimpleFilter<Dsp::RBJ::HighPass, 1> filterSpeakerHP;
+				Dsp::SimpleFilter<Dsp::RBJ::LowPass, 1> filterSpeakerLP;
+
+				//Source: https://github.com/michail-nikolaev/task-force-arma-3-radio
+				//Using settings for personal radio
+				filterSpeakerHP.setup(SAMPLE_RATE, 520, 0.97);
+				filterSpeakerLP.setup(SAMPLE_RATE, 4300, 2.0);
+
+				short* buffer = new short[sampleCount];
+
+				for (int i = 0; i < sampleCount; i++)
+				{
+					buffer[i] = samples[i];
+				}
+
+				short* audioData[1];
+				audioData[0] = buffer;
+
+				filterSpeakerHP.process<short>(sampleCount, audioData);
+				filterSpeakerLP.process<short>(sampleCount, audioData);
+
+				for (int i = 0; i < sampleCount; i++)
+				{
+					//TODO add random noise?
+					samples[i] = audioData[0][i];
+				}
+
+				delete[] buffer;
+			}
+		}
 	}
 
 	void Plugin::checkForUpdate()
@@ -1568,11 +1621,15 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	*/
 
 
-	BEGIN_CREATE_MENUS(2)
+	BEGIN_CREATE_MENUS(4)
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 1, "Check For Update", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 2, "Show Radio Status", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 3, "Enable Radio FX", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 4, "Disable Radio FX", "");
 	END_CREATE_MENUS;
 
+	//read settings to configure the menu
+	plugin.readSettings();
 
 	/* All memory allocated in this function will be automatically released by the TeamSpeak client later by calling ts3plugin_freeMemory */
 }
@@ -1587,6 +1644,12 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 			break;
 		case 2:
 			plugin.launchOverlay();
+			break;
+		case 3:
+			plugin.writeFilterSetting(true);
+			break;
+		case 4:
+			plugin.writeFilterSetting(false);
 			break;
 		default:
 			break;
