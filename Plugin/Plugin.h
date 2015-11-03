@@ -41,7 +41,8 @@ namespace SimpleRadio
 		void start();
 		LPCWSTR getConfigPath();
 		void readSettings();
-		void writeSettings(bool unicast);
+		void writeUnicastSetting(bool unicast);
+		void writeFilterSetting(bool filterSetting);
 		void stop();
 
 		void setTeamSpeakFunctions(TS3Functions functions);
@@ -91,6 +92,8 @@ namespace SimpleRadio
 		bool forceOn;
 
 		bool disablePlugin;
+
+		volatile bool filter;
 
 		int recvfromTimeOutUDP(SOCKET socket, long sec, long usec);
 		
