@@ -253,7 +253,14 @@ namespace RadioGui
                 {
                     if (this.lastActive.radio == this.radioId)
                     {
-                        radioFrequency.Foreground = new SolidColorBrush(Colors.White);
+                        if(this.lastActive.secondary)
+                        {
+                            radioFrequency.Foreground = new SolidColorBrush(Colors.Red);
+                        }
+                        else
+                        {
+                            radioFrequency.Foreground = new SolidColorBrush(Colors.White);
+                        }
                     }
                     else
                     {

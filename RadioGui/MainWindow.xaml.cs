@@ -490,7 +490,7 @@ namespace RadioGui
             if (sizeInfo.WidthChanged) this.Width = sizeInfo.NewSize.Height * aspectRatio;
            else this.Height = sizeInfo.NewSize.Width / aspectRatio;
 
-            Console.WriteLine(this.Height +" width:"+ this.Width);
+           // Console.WriteLine(this.Height +" width:"+ this.Width);
 
         }
 

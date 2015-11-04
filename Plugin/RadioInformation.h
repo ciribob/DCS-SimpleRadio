@@ -6,4 +6,5 @@ struct RadioInformation
 	double frequency;
 	int modulation;
 	float volume;
+	double secondaryFrequency;
 };

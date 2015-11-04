@@ -597,7 +597,7 @@ namespace SimpleRadio
 		}
 	}
 
-	void Plugin::sendActiveRadioUpdateToGUI(int radio, boolean start)
+	void Plugin::sendActiveRadioUpdateToGUI(int radio, boolean secondary)
 	{
 		try
 		{
@@ -618,7 +618,7 @@ namespace SimpleRadio
 			int len = sizeof(SOCKADDR_IN);
 
 			//JSON
-			sprintf(sbuf, "{radio:%i }\r\n", radio);
+			sprintf(sbuf, "{\"radio\":%i, \"secondary\": %s}\r\n", radio,secondary ?"true":"false");
 
 			sendto(s, sbuf, strlen(sbuf), 0, (SOCKADDR*)&serveraddr, len);
 			::closesocket(s);
@@ -778,7 +778,7 @@ namespace SimpleRadio
 							canReceive = true;
 							recievingRadio = i;
 
-							this->sendActiveRadioUpdateToGUI(i, true);
+							this->sendActiveRadioUpdateToGUI(i, false);
 							break;
 						}
 						else if (myRadio.frequency == sendingRadio.frequency
@@ -790,7 +790,17 @@ namespace SimpleRadio
 
 							//send update
 							this->sendActiveRadioUpdateToGUI(i, true);
+						
+							break;
+						}
+						else if (myRadio.secondaryFrequency == sendingRadio.secondaryFrequency
+							&& myRadio.frequency > 10)
+						{
+							canReceive = true;
+							recievingRadio = i;
 
+							this->sendActiveRadioUpdateToGUI(i, false);
+	
 							break;
 						}
 					}
@@ -831,16 +841,11 @@ namespace SimpleRadio
 
 		if (!canReceive)
 		{
-
+			//mute the audio as we can't hear this transmission
 			for (int i = 0; i < sampleCount; i++)
 			{
 				samples[i] = 0.0f;
 			}
-
-			/*	for (int i = 0; i < sampleCount; ++i)
-			{
-			samples[i] = samples[i] * 0;
-			}*/
 		}
 		else if (recievingRadio >= 0) //we are recieving on a radio so mess with the volumes
 		{
@@ -1224,6 +1229,7 @@ namespace SimpleRadio
 					//reset all the radios
 					this->teamSpeakControlledClientData.radio[i].frequency = clientMetaData.radio[i].frequency;
 					this->teamSpeakControlledClientData.radio[i].volume = clientMetaData.radio[i].volume;
+					this->teamSpeakControlledClientData.radio[i].secondaryFrequency = clientMetaData.radio[i].secondaryFrequency;
 				}
 
 				//init selected
@@ -1239,6 +1245,7 @@ namespace SimpleRadio
 				//overwrite current radio frequencies
 				clientMetaData.radio[i].frequency = this->teamSpeakControlledClientData.radio[i].frequency;
 				clientMetaData.radio[i].volume = this->teamSpeakControlledClientData.radio[i].volume;
+				clientMetaData.radio[i].secondaryFrequency = this->teamSpeakControlledClientData.radio[i].secondaryFrequency;
 			}
 
 			//overrwrite selected
@@ -1253,6 +1260,7 @@ namespace SimpleRadio
 				//reset all the radios
 				this->teamSpeakControlledClientData.radio[i].frequency = -1;
 				this->teamSpeakControlledClientData.radio[i].volume = 1.0;
+				this->teamSpeakControlledClientData.radio[i].secondaryFrequency = -1;
 			}
 		}
 	}
