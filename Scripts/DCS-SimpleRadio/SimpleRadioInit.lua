@@ -1,4 +1,4 @@
--- Version 1.1.9
+-- Version 1.2.0
 SR = {}
 
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
@@ -68,9 +68,9 @@ LuaExportActivityNextEvent = function(tCurrent)
 
             radios =
             {
-                { id = 1, name = "init", frequency = 0, modulation = 0, volume = 1.0 },
-                { id = 2, name = "init", frequency = 0, modulation = 0, volume = 1.0 },
-                { id = 3, name = "init", frequency = 0, modulation = 0, volume = 1.0 }
+                { id = 1, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1},
+                { id = 2, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1 },
+                { id = 3, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1 }
             },
             hasRadio = true,
             groundCommander = false,
@@ -118,10 +118,13 @@ LuaExportActivityNextEvent = function(tCurrent)
                 _update.radios[1].name = "FC3 UHF"
                 _update.radios[1].frequency = 251.0*1000000
                 _update.radios[1].modulation = 0
+                _update.radios[1].secondaryFrequency = 243.0*1000000
 
                 _update.radios[2].name = "FC3 VHF"
                 _update.radios[2].frequency = 124.8*1000000
-                _update.radios[2].modulation = 0
+                _update.radios[2].modulation = 121.5*1000000
+                _update.radios[2].secondaryFrequency = 121.5*1000000
+               
 
                 _update.radios[3].name = "FC3 FM"
                 _update.radios[3].frequency = 30.0*1000000
@@ -152,9 +155,9 @@ LuaExportActivityNextEvent = function(tCurrent)
                 selected = 0,
                 radios =
                 {
-                    { id = 1, name = "CA UHF", frequency = 251.0*1000000, modulation = 0,volume = 1.0 },
-                    { id = 2, name = "CA VHF", frequency = 124.8*1000000, modulation = 0,volume = 1.0 },
-                    { id = 3, name = "CA FM", frequency = 30.0*1000000, modulation = 1,volume = 1.0 }
+                    { id = 1, name = "CA UHF", frequency = 251.0*1000000, modulation = 0,volume = 1.0,secondaryFrequency = 243.0*1000000 },
+                    { id = 2, name = "CA VHF", frequency = 124.8*1000000, modulation = 0,volume = 1.0,secondaryFrequency = 121.5*1000000 },
+                    { id = 3, name = "CA FM", frequency = 30.0*1000000, modulation = 1,volume = 1.0,secondaryFrequency = 1 }
                 },
                 hasRadio = false,
                 groundCommander = true
@@ -200,8 +203,11 @@ function SR.exportRadioUH1H(_data)
     _data.radios[3].modulation = 1
     _data.radios[3].volume = SR.getRadioVolume(0, 37,{0.3,1.0},true)
 
-    --todo Check rerange function
-
+    --guard mode for UHF Radio
+    local uhfModeKnob = SR.getSelectorPosition(17,0.1)
+	if uhfModeKnob == 2 and _data.radios[1].frequency > 1000 then
+		_data.radios[1].secondaryFrequency = 243.0*1000000 
+	end
 
     local _panel = GetDevice(0)
 
@@ -279,6 +285,12 @@ function SR.exportRadioMI8(_data)
     _data.radios[3].modulation = 0
     _data.radios[3].volume = SR.getRadioVolume(0, 743,{0.0,1.0},false)
 
+    --guard mode for R-863 Radio
+    local uhfModeKnob = SR.getSelectorPosition(153,1)
+	if uhfModeKnob == 1 and _data.radios[1].frequency > 1000 then
+		_data.radios[1].secondaryFrequency = 121.5*1000000 
+	end
+
     -- Get selected radio from SPU-9
     local _switch = SR.getSelectorPosition(550,0.1)
 
@@ -293,7 +305,6 @@ function SR.exportRadioMI8(_data)
     end
 
     return _data
-
 
 end
 
@@ -329,23 +340,26 @@ end
 
 function SR.exportRadioA10C(_data)
 
-
-    _data.radios[1].name = "AN/ARC-186(V)"
-    _data.radios[1].frequency =  SR.getRadioFrequency(55)
+    _data.radios[1].name = "AN/ARC-164 UHF"
+    _data.radios[1].frequency = SR.getRadioFrequency(54)
     _data.radios[1].modulation = 0
-    _data.radios[1].volume = SR.getRadioVolume(0, 133,{0.0,1.0},false)
+    _data.radios[1].volume = SR.getRadioVolume(0, 171,{0.0,1.0},false)
 
-
-    _data.radios[2].name = "AN/ARC-164"
-    _data.radios[2].frequency = SR.getRadioFrequency(54)
+    _data.radios[2].name = "AN/ARC-186(V)"
+    _data.radios[2].frequency =  SR.getRadioFrequency(55)
     _data.radios[2].modulation = 0
-    _data.radios[2].volume = SR.getRadioVolume(0, 171,{0.0,1.0},false)
+    _data.radios[2].volume = SR.getRadioVolume(0, 133,{0.0,1.0},false)
 
     _data.radios[3].name = "FM"
     _data.radios[3].frequency =  SR.getRadioFrequency(56)
     _data.radios[3].modulation = 1
     _data.radios[3].volume = SR.getRadioVolume(0, 147,{0.0,1.0},false)
 
+     --guard mode for UHF Radio
+    local uhfModeKnob = SR.getSelectorPosition(168,0.1)
+	if uhfModeKnob == 2 and _data.radios[1].frequency > 1000 then
+		_data.radios[1].secondaryFrequency = 243.0*1000000 
+	end
 
     local value = GetDevice(0):get_argument_value(239)
 
@@ -354,9 +368,9 @@ function SR.exportRadioA10C(_data)
     if n == 3 then
         _data.selected = 2
     elseif  n == 2 then
-        _data.selected = 0
-    elseif  n == 1 then
         _data.selected = 1
+    elseif  n == 1 then
+        _data.selected = 0
     else
         _data.selected = -1
     end
@@ -384,6 +398,12 @@ function SR.exportRadioF86Sabre(_data)
     _data.radios[3].volume = 1.0
 
     _data.selected = 0
+
+    --guard mode for UHF Radio
+    local uhfModeKnob = SR.getSelectorPosition(805,0.1)
+	if uhfModeKnob == 2 and _data.radios[1].frequency > 1000 then
+		_data.radios[1].secondaryFrequency = 243.0*1000000 
+	end
 
     return _data;
 end

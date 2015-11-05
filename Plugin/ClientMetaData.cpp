@@ -23,6 +23,7 @@ namespace SimpleRadio
 			this->radio[i].frequency = -1;
 			this->radio[i].modulation = 0;
 			this->radio[i].volume = 1.0;
+			this->radio[i].secondaryFrequency = -1;
 		}
 	}
 
@@ -43,6 +44,7 @@ namespace SimpleRadio
 			current["frequency"] = this->radio[i].frequency;
 			current["modulation"] = this->radio[i].modulation;
 			current["volume"] = this->radio[i].volume;
+			current["secondaryFrequency"] = this->radio[i].secondaryFrequency;
 			array.append(current);
 		}
 
@@ -85,6 +87,16 @@ namespace SimpleRadio
 				data.radio[i].frequency = std::stod(root["radios"][i]["frequency"].asString());
 				data.radio[i].modulation = root["radios"][i]["modulation"].asInt();
 				data.radio[i].volume = root["radios"][i]["volume"].asFloat();
+
+				try {
+					data.radio[i].secondaryFrequency = std::stod(root["radios"][i]["secondaryFrequency"].asString());
+				}
+				catch (...)
+				{
+					//catch older versions
+					data.radio[i].secondaryFrequency = -1;
+				}
+
 			}
 
 
@@ -154,6 +166,10 @@ namespace SimpleRadio
 				return false;
 			}
 			if (this->radio[i].volume != data.radio[i].volume)
+			{
+				return false;
+			}
+			if (this->radio[i].secondaryFrequency != data.radio[i].secondaryFrequency)
 			{
 				return false;
 			}

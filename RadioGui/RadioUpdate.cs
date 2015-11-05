@@ -12,6 +12,7 @@ namespace RadioGui
         public double frequency = 1;
         public int modulation = 0;
         public float volume = 1.0f;
+        public double secondaryFrequency = 1;
 
     };
     class RadioUpdate

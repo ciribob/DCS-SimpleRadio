@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\DSP">
+      <UniqueIdentifier>{2b9b60ab-4837-4358-8411-db0691f88ee1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DSP">
+      <UniqueIdentifier>{fa6b8994-5346-4389-aeaa-14b5dbe87542}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Plugin.h">
@@ -63,8 +69,79 @@
     <ClInclude Include="UDPDiscovery.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+
     <ClInclude Include="RegHelper.h">
       <Filter>Header Files</Filter>
+	 </ClInclude>
+
+    <ClInclude Include="DSPFilters\include\DspFilters\Bessel.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Biquad.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Butterworth.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Cascade.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\ChebyshevI.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\ChebyshevII.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Common.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Custom.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Design.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Dsp.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Elliptic.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Filter.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Layout.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Legendre.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\MathSupplement.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Params.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\PoleFilter.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\RBJ.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\RootFinder.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\SmoothedFilter.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\State.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Types.h">
+      <Filter>Header Files\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="DSPFilters\include\DspFilters\Utilities.h">
+      <Filter>Header Files\DSP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +165,57 @@
     </ClCompile>
     <ClCompile Include="RegHelper.cpp">
       <Filter>Source Files</Filter>
+	  </ClCompile>
+    <ClCompile Include="DSPFilters\source\Bessel.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\Biquad.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\Butterworth.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\Cascade.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\ChebyshevI.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\ChebyshevII.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\Custom.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\Design.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\Documentation.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\Elliptic.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\Filter.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\Legendre.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\Param.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\PoleFilter.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\RBJ.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\RootFinder.cpp">
+      <Filter>Source Files\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="DSPFilters\source\State.cpp">
+      <Filter>Source Files\DSP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@
 #include "RadioUpdateCommand.h"
 #include "json/json.h"
 #include "RegHelper.h"
+#include "DSPFilters\include\DspFilters\Dsp.h"
 
 #include <tchar.h>
 #include <winsock2.h>
@@ -25,6 +26,9 @@
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "Wininet")
 
+#define SAMPLE_RATE 48000
+#define NOISE_LEVEL 5 //in 0.5% of signal to noise
+
 //239.255.50.10
 //5050
 
@@ -37,7 +41,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.1.9";
+	const char* Plugin::VERSION = "1.2.0";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -113,9 +117,32 @@ namespace SimpleRadio
 		{
 			this->switchToUnicast = false;
 		}
+
+		int useFilters = GetPrivateProfileInt(_T("FILTERS"), _T("filter"), 0, this->getConfigPath());
+
+		if (useFilters == 1)
+		{
+			this->filter = true;
+		}
+		else
+		{
+			this->filter = false;
+		}
+
+		if (this->filter)
+		{
+			this->teamspeak.setPluginMenuEnabled(this->pluginId, 3, 0);
+			this->teamspeak.setPluginMenuEnabled(this->pluginId, 4, 1);
+		}
+		else
+		{
+			this->teamspeak.setPluginMenuEnabled(this->pluginId, 3, 1);
+			this->teamspeak.setPluginMenuEnabled(this->pluginId, 4, 0);
+		}
 	}
 
-	void Plugin::writeSettings(bool unicast)
+
+	void Plugin::writeUnicastSetting(bool unicast)
 	{
 		if (unicast == 1)
 		{
@@ -129,6 +156,22 @@ namespace SimpleRadio
 		//refresh after writing
 		this->readSettings();
 
+	}
+
+	void Plugin::writeFilterSetting(bool filterSetting) {
+		if (filterSetting == 1)
+		{
+			WritePrivateProfileString(_T("FILTERS"), _T("filter"), _T("1"), this->getConfigPath());
+			this->teamspeak.printMessageToCurrentTab("Radio Effects Enabled");
+		}
+		else
+		{
+			WritePrivateProfileString(_T("FILTERS"), _T("filter"), _T("0"), this->getConfigPath());
+			this->teamspeak.printMessageToCurrentTab("Radio Effects Disabled");
+		}
+
+		//refresh after writing
+		this->readSettings();
 	}
 
 	void Plugin::stop()
@@ -177,13 +220,13 @@ namespace SimpleRadio
 		{
 			if (this->switchToUnicast)
 			{
-				this->writeSettings(false);
+				this->writeUnicastSetting(false);
 
 				this->teamspeak.printMessageToCurrentTab("Switching to Multicast");
 			}
 			else
 			{
-				this->writeSettings(true);
+				this->writeUnicastSetting(true);
 				this->teamspeak.printMessageToCurrentTab("Switching to Unicast");
 			}
 
@@ -192,7 +235,13 @@ namespace SimpleRadio
 			this->start();
 
 			this->teamspeak.printMessageToCurrentTab("Switched");
-			//	this->teamspeak.printMessageToCurrentTab(this->getConfigPath());
+			
+			return true;
+		}
+		else if (strcmp(command, "filter") == 0)
+		{
+			this->writeFilterSetting(!this->filter);
+			this->teamspeak.printMessageToCurrentTab("Filter Toggle");
 
 			return true;
 		}
@@ -548,7 +597,7 @@ namespace SimpleRadio
 		}
 	}
 
-	void Plugin::sendActiveRadioUpdateToGUI(int radio, boolean start)
+	void Plugin::sendActiveRadioUpdateToGUI(int radio, boolean secondary)
 	{
 		try
 		{
@@ -569,7 +618,7 @@ namespace SimpleRadio
 			int len = sizeof(SOCKADDR_IN);
 
 			//JSON
-			sprintf(sbuf, "{radio:%i }\r\n", radio);
+			sprintf(sbuf, "{\"radio\":%i, \"secondary\": %s}\r\n", radio,secondary ?"true":"false");
 
 			sendto(s, sbuf, strlen(sbuf), 0, (SOCKADDR*)&serveraddr, len);
 			::closesocket(s);
@@ -684,6 +733,9 @@ namespace SimpleRadio
 		bool canReceive = false;
 		int recievingRadio = -1;
 
+	//	std::string str = "Samples:"+ std::to_string(sampleCount) + " Channesl: "+ std::to_string(channels);
+		//this->teamspeak.printMessageToCurrentTab(str.c_str());
+
 		ClientMetaData talkingClient;
 		try
 		{
@@ -726,7 +778,7 @@ namespace SimpleRadio
 							canReceive = true;
 							recievingRadio = i;
 
-							this->sendActiveRadioUpdateToGUI(i, true);
+							this->sendActiveRadioUpdateToGUI(i, false);
 							break;
 						}
 						else if (myRadio.frequency == sendingRadio.frequency
@@ -737,8 +789,18 @@ namespace SimpleRadio
 							recievingRadio = i;
 
 							//send update
-							this->sendActiveRadioUpdateToGUI(i, true);
+							this->sendActiveRadioUpdateToGUI(i, false);
+						
+							break;
+						}
+						else if (myRadio.secondaryFrequency == sendingRadio.secondaryFrequency
+							&& myRadio.frequency > 10)
+						{
+							canReceive = true;
+							recievingRadio = i;
 
+							this->sendActiveRadioUpdateToGUI(i, true);
+	
 							break;
 						}
 					}
@@ -779,17 +841,11 @@ namespace SimpleRadio
 
 		if (!canReceive)
 		{
-
+			//mute the audio as we can't hear this transmission
 			for (int i = 0; i < sampleCount; i++)
 			{
-				for (int j = 0; j < channels; j++)
-					samples[i * channels + j] = 0.0f;
+				samples[i] = 0.0f;
 			}
-
-			/*	for (int i = 0; i < sampleCount; ++i)
-			{
-			samples[i] = samples[i] * 0;
-			}*/
 		}
 		else if (recievingRadio >= 0) //we are recieving on a radio so mess with the volumes
 		{
@@ -798,8 +854,42 @@ namespace SimpleRadio
 			//do volume control
 			for (int i = 0; i < sampleCount; i++)
 			{
-				for (int j = 0; j < channels; j++)
-					samples[i * channels + j] = samples[i * channels + j] * (myRadio.volume);
+				samples[i] = samples[i] * (myRadio.volume);
+			}
+
+			//apply audio filter?
+			if (this->filter)
+			{
+			//	this->teamspeak.printMessageToCurrentTab("Filtering!");
+
+				Dsp::SimpleFilter<Dsp::RBJ::HighPass, 1> filterSpeakerHP;
+				Dsp::SimpleFilter<Dsp::RBJ::LowPass, 1> filterSpeakerLP;
+
+				//Source: https://github.com/michail-nikolaev/task-force-arma-3-radio
+				//Using settings for personal radio
+				filterSpeakerHP.setup(SAMPLE_RATE, 520, 0.97);
+				filterSpeakerLP.setup(SAMPLE_RATE, 4130, 2.0);
+
+				short* buffer = new short[sampleCount];
+
+				for (int i = 0; i < sampleCount; i++)
+				{
+					buffer[i] = samples[i];
+				}
+
+				short* audioData[1];
+				audioData[0] = buffer;
+
+				filterSpeakerHP.process<short>(sampleCount, audioData);
+				filterSpeakerLP.process<short>(sampleCount, audioData);
+
+				for (int i = 0; i < sampleCount; i++)
+				{
+					//TODO add random noise?
+					samples[i] = audioData[0][i];
+				}
+
+				delete[] buffer;
 			}
 		}
 	}
@@ -1139,6 +1229,7 @@ namespace SimpleRadio
 					//reset all the radios
 					this->teamSpeakControlledClientData.radio[i].frequency = clientMetaData.radio[i].frequency;
 					this->teamSpeakControlledClientData.radio[i].volume = clientMetaData.radio[i].volume;
+					this->teamSpeakControlledClientData.radio[i].secondaryFrequency = clientMetaData.radio[i].secondaryFrequency;
 				}
 
 				//init selected
@@ -1154,6 +1245,7 @@ namespace SimpleRadio
 				//overwrite current radio frequencies
 				clientMetaData.radio[i].frequency = this->teamSpeakControlledClientData.radio[i].frequency;
 				clientMetaData.radio[i].volume = this->teamSpeakControlledClientData.radio[i].volume;
+				clientMetaData.radio[i].secondaryFrequency = this->teamSpeakControlledClientData.radio[i].secondaryFrequency;
 			}
 
 			//overrwrite selected
@@ -1168,6 +1260,7 @@ namespace SimpleRadio
 				//reset all the radios
 				this->teamSpeakControlledClientData.radio[i].frequency = -1;
 				this->teamSpeakControlledClientData.radio[i].volume = 1.0;
+				this->teamSpeakControlledClientData.radio[i].secondaryFrequency = -1;
 			}
 		}
 	}
@@ -1536,11 +1629,15 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	*/
 
 
-	BEGIN_CREATE_MENUS(2)
+	BEGIN_CREATE_MENUS(4)
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 1, "Check For Update", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 2, "Show Radio Status", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 3, "Enable Radio FX", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 4, "Disable Radio FX", "");
 	END_CREATE_MENUS;
 
+	//read settings to configure the menu
+	plugin.readSettings();
 
 	/* All memory allocated in this function will be automatically released by the TeamSpeak client later by calling ts3plugin_freeMemory */
 }
@@ -1555,6 +1652,12 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 			break;
 		case 2:
 			plugin.launchOverlay();
+			break;
+		case 3:
+			plugin.writeFilterSetting(true);
+			break;
+		case 4:
+			plugin.writeFilterSetting(false);
 			break;
 		default:
 			break;

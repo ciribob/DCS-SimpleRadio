@@ -41,7 +41,8 @@ namespace SimpleRadio
 		void start();
 		LPCWSTR getConfigPath();
 		void readSettings();
-		void writeSettings(bool unicast);
+		void writeUnicastSetting(bool unicast);
+		void writeFilterSetting(bool filterSetting);
 		void stop();
 
 		void setTeamSpeakFunctions(TS3Functions functions);
@@ -92,6 +93,8 @@ namespace SimpleRadio
 
 		bool disablePlugin;
 
+		volatile bool filter;
+
 		int recvfromTimeOutUDP(SOCKET socket, long sec, long usec);
 		
 		SOCKET mksocket(struct sockaddr_in *addr, bool reuse);
@@ -108,7 +111,7 @@ namespace SimpleRadio
 		
 		void sendUpdateToGUI();
 
-		void sendActiveRadioUpdateToGUI(int radio, boolean start);
+		void sendActiveRadioUpdateToGUI(int radio, boolean secondary);
 
 		void sendHotKeyToGUI(const char * hotkey);
 

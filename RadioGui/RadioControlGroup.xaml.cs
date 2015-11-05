@@ -186,6 +186,10 @@ namespace RadioGui
                 else
                 {
                     radioFrequency.Text = (currentRadio.frequency / MHz).ToString("0.000") + (currentRadio.modulation == 0 ? "AM" : "FM");
+                    if(currentRadio.secondaryFrequency > 100)
+                    {
+                        radioFrequency.Text += " G";
+                    }
                 }
                 radioLabel.Content = lastUpdate.radios[this.radioId].name;
 
@@ -237,7 +241,7 @@ namespace RadioGui
         {
             if (this.lastActive == null)
             {
-                radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
+                radioFrequency.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00FF00"));
             }
             else
             {
@@ -247,17 +251,24 @@ namespace RadioGui
 
                 if (elapsedSpan.TotalSeconds > 0.5)
                 {
-                    radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
+                    radioFrequency.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00FF00"));
                 }
                 else
                 {
                     if (this.lastActive.radio == this.radioId)
                     {
-                        radioFrequency.Foreground = new SolidColorBrush(Colors.White);
+                        if(this.lastActive.secondary)
+                        {
+                            radioFrequency.Foreground = new SolidColorBrush(Colors.Red);
+                        }
+                        else
+                        {
+                            radioFrequency.Foreground = new SolidColorBrush(Colors.White);
+                        }
                     }
                     else
                     {
-                        radioFrequency.Foreground = new SolidColorBrush(Colors.Orange);
+                        radioFrequency.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00FF00"));
                     }
                 }
             }
