@@ -20,11 +20,12 @@ Special thanks to Teo (ED Forums) and his GitHub Project (https://github.com/ola
   - Ability to hear others and talk to them when not currently in game or not in an aircraft (hotkey to disable this if you want)
   - Ability to force the Radio system on when spectating, Ground Commanding or JTAC
   - L-39C Intercom Support - Private channel between from and back seat in multiplayer
+  - Basic optional radio effects
+  - Guard Mode for UH-1/A10C/F-86/Mi-8/KA-50 
  
 # Known Limitations
  - On some US radios the currently selected preset radio channel selector doesn't seem to work, as in all the frequencies are the same...
  - No Signal degredation or line of sight limitations to broadcasts unlike TARS
- - Guard Frequencies not yet implemented
  
 # Installation
 
