@@ -186,6 +186,10 @@ namespace RadioGui
                 else
                 {
                     radioFrequency.Text = (currentRadio.frequency / MHz).ToString("0.000") + (currentRadio.modulation == 0 ? "AM" : "FM");
+                    if(currentRadio.secondaryFrequency > 100)
+                    {
+                        radioFrequency.Text += " G";
+                    }
                 }
                 radioLabel.Content = lastUpdate.radios[this.radioId].name;
 

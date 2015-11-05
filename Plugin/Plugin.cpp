@@ -41,7 +41,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.1.9";
+	const char* Plugin::VERSION = "1.2.0";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -789,7 +789,7 @@ namespace SimpleRadio
 							recievingRadio = i;
 
 							//send update
-							this->sendActiveRadioUpdateToGUI(i, true);
+							this->sendActiveRadioUpdateToGUI(i, false);
 						
 							break;
 						}
@@ -799,7 +799,7 @@ namespace SimpleRadio
 							canReceive = true;
 							recievingRadio = i;
 
-							this->sendActiveRadioUpdateToGUI(i, false);
+							this->sendActiveRadioUpdateToGUI(i, true);
 	
 							break;
 						}
@@ -868,7 +868,7 @@ namespace SimpleRadio
 				//Source: https://github.com/michail-nikolaev/task-force-arma-3-radio
 				//Using settings for personal radio
 				filterSpeakerHP.setup(SAMPLE_RATE, 520, 0.97);
-				filterSpeakerLP.setup(SAMPLE_RATE, 4300, 2.0);
+				filterSpeakerLP.setup(SAMPLE_RATE, 4130, 2.0);
 
 				short* buffer = new short[sampleCount];
 

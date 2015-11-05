@@ -169,6 +169,10 @@ namespace SimpleRadio
 			{
 				return false;
 			}
+			if (this->radio[i].secondaryFrequency != data.radio[i].secondaryFrequency)
+			{
+				return false;
+			}
 
 		}
 

@@ -1,4 +1,4 @@
--- Version 1.1.9
+-- Version 1.2.0
 SR = {}
 
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
@@ -340,17 +340,15 @@ end
 
 function SR.exportRadioA10C(_data)
 
-
-    _data.radios[1].name = "AN/ARC-186(V)"
-    _data.radios[1].frequency =  SR.getRadioFrequency(55)
+    _data.radios[1].name = "AN/ARC-164 UHF"
+    _data.radios[1].frequency = SR.getRadioFrequency(54)
     _data.radios[1].modulation = 0
-    _data.radios[1].volume = SR.getRadioVolume(0, 133,{0.0,1.0},false)
+    _data.radios[1].volume = SR.getRadioVolume(0, 171,{0.0,1.0},false)
 
-
-    _data.radios[2].name = "AN/ARC-164"
-    _data.radios[2].frequency = SR.getRadioFrequency(54)
+    _data.radios[2].name = "AN/ARC-186(V)"
+    _data.radios[2].frequency =  SR.getRadioFrequency(55)
     _data.radios[2].modulation = 0
-    _data.radios[2].volume = SR.getRadioVolume(0, 171,{0.0,1.0},false)
+    _data.radios[2].volume = SR.getRadioVolume(0, 133,{0.0,1.0},false)
 
     _data.radios[3].name = "FM"
     _data.radios[3].frequency =  SR.getRadioFrequency(56)
@@ -370,9 +368,9 @@ function SR.exportRadioA10C(_data)
     if n == 3 then
         _data.selected = 2
     elseif  n == 2 then
-        _data.selected = 0
-    elseif  n == 1 then
         _data.selected = 1
+    elseif  n == 1 then
+        _data.selected = 0
     else
         _data.selected = -1
     end

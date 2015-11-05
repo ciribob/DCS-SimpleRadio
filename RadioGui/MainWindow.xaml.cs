@@ -61,7 +61,7 @@ namespace RadioGui
         {
 
             InitializeComponent();
-           
+
 
             this.SourceInitialized += MainWindow_SourceInitialized;
 
@@ -69,14 +69,14 @@ namespace RadioGui
             {
                 Close();
             }
-         
+
             //allows click and drag anywhere on the window
             this.containerPanel.MouseLeftButtonDown += WrapPanel_MouseLeftButtonDown;
-          
+
             radio1.radioId = 0;
-           
+
             radio2.radioId = 1;
-          
+
             radio3.radioId = 2;
 
             SetupActiveRadio();
@@ -252,7 +252,7 @@ namespace RadioGui
                         }
                         catch (Exception e)
                         {
-                           // Console.Out.WriteLine(e.ToString());
+                            // Console.Out.WriteLine(e.ToString());
                         }
 
 
@@ -278,7 +278,7 @@ namespace RadioGui
 
                     }));
                 }
-                
+
             });
 
         }
@@ -310,9 +310,9 @@ namespace RadioGui
                             hotkeyClient.Client.ReceiveTimeout = 10000;
                             var receivedResults = hotkeyClient.Receive(ref remoteEndPoint);
 
-                            var hotKeyStr =  System.Text.Encoding.UTF8.GetString(receivedResults).Trim();
+                            var hotKeyStr = System.Text.Encoding.UTF8.GetString(receivedResults).Trim();
 
-                            if(hotKeyStr.Contains("DCS-SR-TOGGLE-STATUS"))
+                            if (hotKeyStr.Contains("DCS-SR-TOGGLE-STATUS"))
                             {
                                 Application.Current.Dispatcher.Invoke(new Action(() =>
                                 {
@@ -329,8 +329,8 @@ namespace RadioGui
 
                                 }));
 
-                            
-                               
+
+
                             }
 
                         }
@@ -383,7 +383,7 @@ namespace RadioGui
         private void SendUDPCommand(RadioCommand.CmdType type)
         {
             RadioCommand update = new RadioCommand();
-            update.freq =1;
+            update.freq = 1;
             update.volume = 1;
             update.radio = 0;
             update.cmdType = type;
@@ -393,7 +393,7 @@ namespace RadioGui
             Send("239.255.50.10", 5060, bytes);
             //unicast
             Send("127.0.0.1", 5061, bytes);
-            
+
 
         }
         private void Send(String ipStr, int port, byte[] bytes)
@@ -424,11 +424,31 @@ namespace RadioGui
 
         private void containerPanel_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            
-                CalculateScale();
+            //force aspect ratio
+            CalculateScale();
         }
 
-        #region ScaleValue Depdency Property
+        private void CalculateScale()
+        {
+            double yScale = ActualHeight / 285f;
+            double xScale = ActualWidth / 140f;
+            double value = Math.Min(xScale, yScale);
+            ScaleValue = (double)OnCoerceScaleValue(myMainWindow, value);
+        }
+
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+
+            if (sizeInfo.WidthChanged)
+                this.Width = sizeInfo.NewSize.Height * aspectRatio;
+            else
+                this.Height = sizeInfo.NewSize.Width / aspectRatio;
+
+            // Console.WriteLine(this.Height +" width:"+ this.Width);
+
+        }
+
+        #region ScaleValue Depdency Property //StackOverflow: http://stackoverflow.com/questions/3193339/tips-on-developing-resolution-independent-application/5000120#5000120
         public static readonly DependencyProperty ScaleValueProperty = DependencyProperty.Register("ScaleValue", typeof(double), typeof(MainWindow), new UIPropertyMetadata(1.0, new PropertyChangedCallback(OnScaleValueChanged), new CoerceValueCallback(OnCoerceScaleValue)));
 
         private static object OnCoerceScaleValue(DependencyObject o, object value)
@@ -474,26 +494,6 @@ namespace RadioGui
         }
         #endregion
 
-     
-
-        private void CalculateScale()
-        {
-            double yScale = ActualHeight / 285f;
-            double xScale = ActualWidth / 140f;
-            double value = Math.Min(xScale, yScale);
-            ScaleValue = (double)OnCoerceScaleValue(myMainWindow, value);
-        }
-
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-
-            if (sizeInfo.WidthChanged) this.Width = sizeInfo.NewSize.Height * aspectRatio;
-           else this.Height = sizeInfo.NewSize.Width / aspectRatio;
-
-           // Console.WriteLine(this.Height +" width:"+ this.Width);
-
-        }
-
         private IntPtr _windowHandle;
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
         {
@@ -504,10 +504,7 @@ namespace RadioGui
         }
 
         protected void DisableMaximizeButton()
-        {
-            if (_windowHandle == null)
-                throw new InvalidOperationException("The window has not yet been completely initialized");
-
+        { 
             SetWindowLong(_windowHandle, GWL_STYLE, GetWindowLong(_windowHandle, GWL_STYLE) & ~WS_MAXIMIZEBOX);
         }
     }
