@@ -12,6 +12,7 @@ namespace RadioTester
         public double frequency = 1;
         public int modulation = 0;
         public float volume = 1.0f;
+        public double secondaryFrequency = 1;
 
     };
     class RadioUpdate
@@ -24,6 +25,7 @@ namespace RadioTester
         public RadioInformation[] radios = new RadioInformation[3];
         public bool hasRadio = false;
         public bool groundCommander = false;
+        public int unitId = 100;
   
     };
 }

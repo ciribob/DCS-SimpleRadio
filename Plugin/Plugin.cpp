@@ -793,11 +793,14 @@ namespace SimpleRadio
 						
 							break;
 						}
-						else if (myRadio.secondaryFrequency == sendingRadio.secondaryFrequency
-							&& myRadio.frequency > 10)
+						else if (myRadio.secondaryFrequency == sendingRadio.frequency
+							&& myRadio.secondaryFrequency > 100)
 						{
 							canReceive = true;
 							recievingRadio = i;
+						/*		std::ostringstream oss;
+							oss << "Receiving On Secondary: " <<myRadio.secondaryFrequency << " From "<<sendingRadio.frequency;
+								this->teamspeak.printMessageToCurrentTab(oss.str().c_str());*/
 
 							this->sendActiveRadioUpdateToGUI(i, true);
 	
