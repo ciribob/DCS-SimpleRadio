@@ -57,6 +57,7 @@ namespace SimpleRadio
 		, switchToUnicast(false)
 		, forceOn(false)
 		, disablePlugin(false)
+		, menuRadioSwitchDisabled(true)
 	{
 	}
 
@@ -131,13 +132,13 @@ namespace SimpleRadio
 
 		if (this->filter)
 		{
-			this->teamspeak.setPluginMenuEnabled(this->pluginId, 3, 0);
-			this->teamspeak.setPluginMenuEnabled(this->pluginId, 4, 1);
+			this->disableMenuItem(3);
+			this->enableMenuItem(4);
 		}
 		else
 		{
-			this->teamspeak.setPluginMenuEnabled(this->pluginId, 3, 1);
-			this->teamspeak.setPluginMenuEnabled(this->pluginId, 4, 0);
+			this->enableMenuItem(3);
+			this->disableMenuItem(4);
 		}
 	}
 
@@ -252,19 +253,21 @@ namespace SimpleRadio
 
 	string Plugin::getClientInfoData(uint64 serverConnectionHandlerId, uint64 clientId) const
 	{
-		const size_t BUFFER_SIZE = 256;
-		//const int MHz = 1000000;
-		char buffer[BUFFER_SIZE] = { 0 };
+
+		std::stringstream infoDataStr;
+		infoDataStr.precision(2);
+		infoDataStr.setf(infoDataStr.fixed, infoDataStr.floatfield);
+		//infoDataStr.fixed = 3;
+		
 
 		try
 		{
-
 			ClientMetaData clientInfoData;
 
 			anyID myID;
 			if (this->teamspeak.getClientID(serverConnectionHandlerId, &myID) != ERROR_ok) {
-				strcat_s(buffer, BUFFER_SIZE, "Status: Not connected to a server");
-				return buffer;
+				
+				return "\nStatus: [B]Not connected to a server[/B]";
 			}
 
 			//get clientInfoData
@@ -279,77 +282,92 @@ namespace SimpleRadio
 
 			//do we have any valid update at all
 			if (clientInfoData.lastUpdate > 5000ull)
-			{
-				//no radio
-				if (clientInfoData.selected < 0)
-				{
-					char status[256] = { 0 };
-					if (myID == clientId)
+			{			
+				const double MHZ = 1000000;
+
+				infoDataStr << "\nStatus " << (clientInfoData.isCurrent() ? "[B][color=green]Live[/color][/B]" : "[B][color=red]UNKNOWN[/color][/B]") << ": " << clientInfoData.name << ", is in " << clientInfoData.unit.c_str() << "\n";
+				
+				if (clientInfoData.selected >= 0 && clientInfoData.selected <= 2)
+				{ 
+					if (clientInfoData.radio[clientInfoData.selected].modulation == 2 )
 					{
-						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio: None\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
+						infoDataStr << "Selected Radio: [B]INTERCOM[/B]\n";
 					}
-					else
+					else 
 					{
-						sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio: None\nCA Mode:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), clientInfoData.groundCommander ? "ON" : "OFF");
-
+						infoDataStr << "Selected Radio: ";
+						infoDataStr << "[B]" << (clientInfoData.radio[clientInfoData.selected].frequency / MHZ) << (clientInfoData.radio[clientInfoData.selected].modulation == 0 ? "AM" : "FM") << "[/B]\n";
 					}
-					strcat_s(buffer, BUFFER_SIZE, status);
-
-					return buffer;
-
 				}
 				else
 				{
-					RadioInformation &currentRadio = clientInfoData.radio[clientInfoData.selected];
-					char status[256] = { 0 };
-					const double MHZ = 1000000;
-
-					//catch divide by zero
-					if (currentRadio.frequency == 0 || currentRadio.frequency == 0.0)
-					{
-						currentRadio.frequency = -1;
-					}
-
-					if (myID == clientId)
-					{
-						//Intercom
-						if (currentRadio.modulation == 2)
-						{
-							sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio: INTERCOM\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
-						}
-						else
-						{
-							sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s\nPlugin:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF", this->disablePlugin ? "DISABLED" : "Enabled");
-						}
-
-					}
-					else
-					{
-						//Intercom
-						if (currentRadio.modulation == 2)
-						{
-							sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio: INTERCOM\nCA Mode:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), clientInfoData.groundCommander ? "ON" : "OFF");
-						}
-						else
-						{
-							sprintf_s(status, 256, "Status %s: %s, is in %s \nSelected Radio %s\nFreq (MHz): %.4f %s\nCA Mode:%s", clientInfoData.isCurrent() ? "Live" : "Unknown", clientInfoData.name.c_str(), clientInfoData.unit.c_str(), currentRadio.name.c_str(), currentRadio.frequency / MHZ, currentRadio.modulation == 0 ? "AM" : "FM", clientInfoData.groundCommander ? "ON" : "OFF");
-						}
-					}
-					strcat_s(buffer, BUFFER_SIZE, status);
+					infoDataStr << "Selected Radio: [B]None[/B]\n";
 				}
+
+				infoDataStr << "Radios: ";
+
+				bool radioOn = false;
+				for (int i = 0; i < 3; i++)
+				{
+					if (clientInfoData.radio[i].frequency > 1000) 
+					{
+						if (!radioOn)
+						{
+							infoDataStr << "\n";
+						}
+
+						radioOn = true;
+						infoDataStr << clientInfoData.radio[i].name << " - ";
+
+						if (clientInfoData.selected == i)
+						{
+							infoDataStr << "[B]";
+						}
+
+						infoDataStr << (clientInfoData.radio[i].frequency / MHZ)
+							<< (clientInfoData.radio[i].modulation == 0 ? "AM" : "FM");
+
+						if (clientInfoData.radio[i].secondaryFrequency > 1000)
+						{
+							infoDataStr << " +G";
+						}
+
+						if (clientInfoData.selected == i)
+						{
+							infoDataStr << "[/B]";
+						}
+
+						infoDataStr << "\n";
+						
+					}
+				}
+
+				if (!radioOn)
+				{
+					infoDataStr << " [B]None Powered On[/B]\n";
+				}
+
+				if (myID == clientId)
+				{
+					infoDataStr << "Radio For CA: " << (this->forceOn ? "[B][color=green]ON[/color][/B]" : "[B][color=red]OFF[/color][/B]") << "\n";
+					infoDataStr << "Mute Non Radio: " << (this->allowNonPlayers ? "[B][color=green]OFF[/color][/B]" : "[B][color=red]ON[/color][/B]") << "\n";
+					infoDataStr << "Plugin: " << (this->disablePlugin ? "[B][color=red]DISABLED[/color][/B]" : "[B][color=green]Enabled[/color][/B]");
+				}
+				return infoDataStr.str();
+				
 			}
 			else
 			{
-				strcat_s(buffer, BUFFER_SIZE, "Status: Not In Game\n");
+				return  "\nStatus: [B]Not In Game[/B]";
 			}
 		}
 		catch (...)
 		{
 			// Client not in map, return
-			strcat_s(buffer, BUFFER_SIZE, "Status: Not In Game or Not Running Plugin\n");
+			return  "\nStatus: [B]Not In Game or Not Running Plugin[/B]";
 		}
 
-		return buffer;
+	
 	}
 
 	string Plugin::getClientMetaData(uint64 serverConnectionHandlerId, uint64 clientId) const
@@ -687,9 +705,25 @@ namespace SimpleRadio
 
 						ClientMetaData metadata = ClientMetaData::deserialize(bufferForMetaData, false);
 
+						
 						this->myClientData = metadata;
 
 						sendUpdateToGUI();
+
+						if (!this->menuRadioSwitchDisabled && this->myClientData.hasRadio)
+						{
+							this->disableMenuItem(6);
+							this->disableMenuItem(7);
+							this->disableMenuItem(8);
+							this->menuRadioSwitchDisabled = true;
+						}
+						else if (this->menuRadioSwitchDisabled && !this->myClientData.hasRadio)
+						{
+							this->enableMenuItem(6);
+							this->enableMenuItem(7);
+							this->enableMenuItem(8);
+							this->menuRadioSwitchDisabled = false;
+						}
 
 					}
 					catch (...)
@@ -906,6 +940,16 @@ namespace SimpleRadio
 			this->updateThread.join();
 		}
 		this->updateThread = thread(&Plugin::UpdateCheckThread, this);
+	}
+
+	void Plugin::enableMenuItem(int id)
+	{
+		this->teamspeak.setPluginMenuEnabled(this->pluginId, id, 1);
+	}
+
+	void Plugin::disableMenuItem(int id)
+	{
+		this->teamspeak.setPluginMenuEnabled(this->pluginId, id, 0);
 	}
 
 	void Plugin::launchOverlay()
@@ -1523,10 +1567,9 @@ void ts3plugin_infoData(uint64 serverConnectionHandlerID, uint64 id, enum Plugin
 	plugin.serverHandlerID = serverConnectionHandlerID;
 	if (type == PLUGIN_CLIENT)
 	{
-		string info = plugin.getClientInfoData(serverConnectionHandlerID, id);
-		size_t size = info.length() + 1;
-		*data = new char[size];
-		strcpy_s(*data, size, info.c_str());
+		string metaData = plugin.getClientInfoData(serverConnectionHandlerID, id);
+		*data = (char*)malloc(512 * sizeof(char));  /* Must be allocated in the plugin! */
+		snprintf(*data, 512, "%s", metaData.c_str());  /* bbCode is supported. HTML is not supported */
 	}
 }
 
@@ -1632,15 +1675,25 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	*/
 
 
-	BEGIN_CREATE_MENUS(4)
+	BEGIN_CREATE_MENUS(10)
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 1, "Check For Update", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 2, "Show Radio Status", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 3, "Enable Radio FX", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 4, "Disable Radio FX", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 5, "Plugin ON/OFF", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 6, "Select UHF AM", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 7, "Select VHF AM", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 8, "Select FM", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 9, "Mute/Unmute on Non Radio Users", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 10, "Radio ON/OFF for Spectating / CA", "");
 	END_CREATE_MENUS;
 
 	//read settings to configure the menu
 	plugin.readSettings();
+
+	plugin.disableMenuItem(6);
+	plugin.disableMenuItem(7);
+	plugin.disableMenuItem(8);
 
 	/* All memory allocated in this function will be automatically released by the TeamSpeak client later by calling ts3plugin_freeMemory */
 }
@@ -1661,6 +1714,24 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 			break;
 		case 4:
 			plugin.writeFilterSetting(false);
+			break;
+		case 5:
+			plugin.onHotKeyEvent("DCS-SR-TOGGLE-ENABLE");
+			break;
+		case 6:
+			plugin.onHotKeyEvent("DCS-SR-TRANSMIT-UHF");
+			break;
+		case 7:
+			plugin.onHotKeyEvent("DCS-SR-TRANSMIT-VHF");
+			break;
+		case 8:
+			plugin.onHotKeyEvent("DCS-SR-TRANSMIT-FM");
+			break;
+		case 9:
+			plugin.onHotKeyEvent("DCS-SR-TOGGLE-MUTE");
+			break;
+		case 10:
+			plugin.onHotKeyEvent("DCS-SR-TOGGLE-FORCE-ON");
 			break;
 		default:
 			break;

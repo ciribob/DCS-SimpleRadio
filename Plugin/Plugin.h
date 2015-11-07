@@ -67,6 +67,9 @@ namespace SimpleRadio
 
 		void launchOverlay();
 
+		void enableMenuItem(int id);
+		void disableMenuItem(int id);
+
 	private:
 		char* pluginId;
 
@@ -85,15 +88,17 @@ namespace SimpleRadio
 
 		std::thread updateThread;
 
-		bool allowNonPlayers;
+		volatile bool allowNonPlayers;
 
-		bool switchToUnicast;
+		volatile bool switchToUnicast;
 
-		bool forceOn;
+		volatile bool forceOn;
 
-		bool disablePlugin;
+		volatile bool disablePlugin;
 
 		volatile bool filter;
+
+		volatile bool menuRadioSwitchDisabled;
 
 		int recvfromTimeOutUDP(SOCKET socket, long sec, long usec);
 		
