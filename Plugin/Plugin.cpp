@@ -41,7 +41,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.2.2";
+	const char* Plugin::VERSION = "1.2.3";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -118,18 +118,14 @@ namespace SimpleRadio
 		{
 			this->switchToUnicast = false;
 		}
+		RegHelper helper;
+		this->filter = helper.readRadioFXPreference();
 
-		int useFilters = GetPrivateProfileInt(_T("FILTERS"), _T("filter"), 0, this->getConfigPath());
+		this->configureRadioFXMenu();
+	}
 
-		if (useFilters == 1)
-		{
-			this->filter = true;
-		}
-		else
-		{
-			this->filter = false;
-		}
-
+	void Plugin::configureRadioFXMenu()
+	{
 		if (this->filter)
 		{
 			this->disableMenuItem(3);
@@ -159,20 +155,23 @@ namespace SimpleRadio
 
 	}
 
-	void Plugin::writeFilterSetting(bool filterSetting) {
-		if (filterSetting == 1)
+	void Plugin::writeFilterSetting(bool filterSetting) {\
+		RegHelper helper;
+		if (filterSetting)
 		{
-			WritePrivateProfileString(_T("FILTERS"), _T("filter"), _T("1"), this->getConfigPath());
+			helper.writeRadioFXPreference(filterSetting);
 			this->teamspeak.printMessageToCurrentTab("Radio Effects Enabled");
 		}
 		else
 		{
-			WritePrivateProfileString(_T("FILTERS"), _T("filter"), _T("0"), this->getConfigPath());
+			helper.writeRadioFXPreference(filterSetting);
 			this->teamspeak.printMessageToCurrentTab("Radio Effects Disabled");
 		}
 
+		this->filter = filterSetting;
+
 		//refresh after writing
-		this->readSettings();
+		this->configureRadioFXMenu();
 	}
 
 	void Plugin::stop()

@@ -1,4 +1,4 @@
--- Version 1.2.2
+-- Version 1.2.3
 SR = {}
 
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
@@ -271,7 +271,14 @@ function SR.exportRadioMI8(_data)
 
     _data.radios[1].name = "R-863"
     _data.radios[1].frequency = SR.getRadioFrequency(38)
-    _data.radios[1].modulation = 0
+    
+    local _modulation = GetDevice(0):get_argument_value(369)
+    if _modulation > 0.5 then
+        _data.radios[1].modulation = 1
+    else
+        _data.radios[1].modulation = 0
+    end
+    
     _data.radios[1].volume = SR.getRadioVolume(0, 156,{0.0,1.0},false)
 
     _data.radios[2].name = "R-828"

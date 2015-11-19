@@ -14,5 +14,9 @@ public:
 
 	std::string readSRPath();
 
+	void writeRadioFXPreference(bool radioFX);
+
+	bool readRadioFXPreference();
+
 };
 

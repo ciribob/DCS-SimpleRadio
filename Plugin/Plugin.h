@@ -41,6 +41,7 @@ namespace SimpleRadio
 		void start();
 		LPCWSTR getConfigPath();
 		void readSettings();
+		void configureRadioFXMenu();
 		void writeUnicastSetting(bool unicast);
 		void writeFilterSetting(bool filterSetting);
 		void stop();
