@@ -28,15 +28,7 @@ namespace RadioGui
     /// </summary>
     public partial class MainWindow : Window
     {
-        [DllImport("user32.dll")]
-        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        private const int GWL_STYLE = -16;
-
-        private const int WS_MAXIMIZEBOX = 0x10000; //maximize button
-        private const int WS_MINIMIZEBOX = 0x20000; //minimize button
+      
 
         private UdpClient udpClient;
         private const int UdpClientBroadcastPort = 35024;
@@ -63,7 +55,7 @@ namespace RadioGui
             InitializeComponent();
 
 
-            this.SourceInitialized += MainWindow_SourceInitialized;
+           // this.SourceInitialized += MainWindow_SourceInitialized;
 
             if (Is_SimpleRadio_running())
             {
@@ -430,8 +422,8 @@ namespace RadioGui
 
         private void CalculateScale()
         {
-            double yScale = ActualHeight / 285f;
-            double xScale = ActualWidth / 140f;
+            double yScale = ActualHeight / this.myMainWindow.MinWidth;
+            double xScale = ActualWidth / this.myMainWindow.MinWidth;
             double value = Math.Min(xScale, yScale);
             ScaleValue = (double)OnCoerceScaleValue(myMainWindow, value);
         }
@@ -494,19 +486,7 @@ namespace RadioGui
         }
         #endregion
 
-        private IntPtr _windowHandle;
-        private void MainWindow_SourceInitialized(object sender, EventArgs e)
-        {
-            _windowHandle = new WindowInteropHelper(this).Handle;
 
-            //disable the maximize button
-            DisableMaximizeButton();
-        }
-
-        protected void DisableMaximizeButton()
-        { 
-            SetWindowLong(_windowHandle, GWL_STYLE, GetWindowLong(_windowHandle, GWL_STYLE) & ~WS_MAXIMIZEBOX);
-        }
     }
 
 }
