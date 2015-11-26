@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:RadioGui"
           
+             Name="radioControlContainer"
               Width="120" Height="70"
              >
     <WrapPanel>
@@ -26,7 +27,9 @@
         <Button HorizontalAlignment="Center" x:Name="down10" Content="" Width="15" Height="10" Margin="30,0,0,0" ToolTip="-10MHZ" Click="down10_Click" IsEnabled="False"/>
         <Button HorizontalAlignment="Center" x:Name="down1" Content="" Width="15" Height="10" ToolTip="-1MHz" Click="down1_Click" IsEnabled="False"/>
         <Button HorizontalAlignment="Center" x:Name="down01" Content="" Width="15" Height="10" Margin="0,0,0,0" ToolTip="-0.1MHz" Click="down01_Click" IsEnabled="False"/>
-        <Slider x:Name="radioVolume" Width="125" Margin="2"  Maximum="100" IsEnabled="False" Height="15" Thumb.DragCompleted="radioVolume_DragCompleted" Thumb.DragStarted="radioVolume_DragStarted" />
-       
+        <Slider x:Name="radioVolume" Width="125" Margin="2"  Maximum="100" IsEnabled="False" Height="15" Thumb.DragCompleted="radioVolume_DragCompleted" Thumb.DragStarted="radioVolume_DragStarted"  >
+            
+        </Slider>
+
     </WrapPanel>
 </UserControl>

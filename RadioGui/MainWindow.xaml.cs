@@ -54,7 +54,6 @@ namespace RadioGui
 
             InitializeComponent();
 
-
            // this.SourceInitialized += MainWindow_SourceInitialized;
 
             if (Is_SimpleRadio_running())
@@ -66,10 +65,13 @@ namespace RadioGui
             this.containerPanel.MouseLeftButtonDown += WrapPanel_MouseLeftButtonDown;
 
             radio1.radioId = 0;
+        //    this.radio1.radioControlContainer.MouseLeftButtonDown += WrapPanel_MouseLeftButtonDown;
 
             radio2.radioId = 1;
+        //    this.radio2.radioControlContainer.MouseLeftButtonDown += WrapPanel_MouseLeftButtonDown;
 
             radio3.radioId = 2;
+        //    this.radio3.radioControlContainer.MouseLeftButtonDown += WrapPanel_MouseLeftButtonDown;
 
             SetupActiveRadio();
             SetupRadioStatus();
