@@ -25,7 +25,7 @@
 
 
         <Button x:Name="button1" Content="Install / Update for DCS Release" HorizontalAlignment="Left" Margin="18,222,0,0" VerticalAlignment="Top" Width="185" Click="Install_Release"/>
-        <Button x:Name="button1_Copy" Content="Install / Update DCS Open Beta" HorizontalAlignment="Left" Margin="239,222,0,0" VerticalAlignment="Top" Width="185" Click="Install_Beta"/>
+        <Button x:Name="button1_Copy" Content="Install / Update DCS Open Alpha" HorizontalAlignment="Left" Margin="239,222,0,0" VerticalAlignment="Top" Width="185" Click="Install_Beta"/>
         <GridSplitter x:Name="gridSplitter" HorizontalAlignment="Left" Height="40" Margin="221,217,0,0" VerticalAlignment="Top" Width="5"/>
         <Button x:Name="button1_Copy2" Content="Remove DCS-SimpleRadio" HorizontalAlignment="Left" Margin="140,270,0,0" VerticalAlignment="Top" Width="170" Click="Remove_Plugin" />
       

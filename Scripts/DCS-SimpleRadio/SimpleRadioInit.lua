@@ -1,4 +1,4 @@
--- Version 1.2.4
+-- Version 1.3.0
 SR = {}
 
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
@@ -24,35 +24,12 @@ SR.JSON = JSON
 
 --dofile(lfs.writedir()..[[Scripts\DCS-SimpleRadio\SimpleRadio-IO.lua]])
 
-UDPSendSocket = socket.udp()
-UDPSendSocket:settimeout(0)
+SR.UDPSendSocket = socket.udp()
+SR.UDPSendSocket:settimeout(0)
 
 -- Prev Export functions.
 local _prevExport = {}
-_prevExport.LuaExportStart = LuaExportStart
-_prevExport.LuaExportStop = LuaExportStop
-_prevExport.LuaExportBeforeNextFrame = LuaExportBeforeNextFrame
-_prevExport.LuaExportAfterNextFrame = LuaExportAfterNextFrame
-
--- Lua Export Functions
-LuaExportStart = function()
-
-    --socket.try(UDPSendSocket:sendto("Start\n\n", "239.255.50.10", 5050))
-
-    -- Chain previously-included export as necessary
-    if _prevExport.LuaExportStart then
-        _prevExport.LuaExportStart()
-    end
-end
-
-LuaExportStop = function()
-
-    --socket.try(UDPSendSocket:sendto("End\n\n", "239.255.50.10", 5050))
-    -- Chain previously-included export as necessary
-    if _prevExport.LuaExportStop then
-        _prevExport.LuaExportStop()
-    end
-end
+_prevExport.LuaExportActivityNextEvent = LuaExportActivityNextEvent
 
 LuaExportActivityNextEvent = function(tCurrent)
     local tNext = tCurrent + 0.3
@@ -113,6 +90,8 @@ LuaExportActivityNextEvent = function(tCurrent)
                 _update = SR.exportRadioC101(_update)
             elseif _update.unit == "Hawk" then
                 _update = SR.exportRadioHawk(_update)
+            elseif _update.unit == "M-2000C" then
+                _update = SR.exportRadioM2000C(_update)
             else
                 -- FC 3
                 _update.radios[1].name = "FC3 UHF"
@@ -139,9 +118,9 @@ LuaExportActivityNextEvent = function(tCurrent)
             end
 
             if SR.unicast then
-                socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
+                socket.try(SR.UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
             else
-                socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
+                socket.try(SR.UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
             end
 
         else
@@ -163,9 +142,9 @@ LuaExportActivityNextEvent = function(tCurrent)
             }
 
             if SR.unicast then
-                socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
+                socket.try(SR.UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "127.0.0.1", 5056))
             else
-                socket.try(UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
+                socket.try(SR.UDPSendSocket:sendto(SR.JSON:encode(_update).." \n", "239.255.50.10", 5050))
             end
 
         end
@@ -176,10 +155,9 @@ LuaExportActivityNextEvent = function(tCurrent)
         SR.log('ERROR: ' .. _result)
     end
 
-
     -- Call original function if it exists
-    if _prevExport.LuaExportAfterNextFrame then
-        _prevExport.LuaExportAfterNextFrame(tCurrent)
+    if _prevExport.LuaExportActivityNextEvent then
+        _prevExport.LuaExportActivityNextEvent(tCurrent)
     end
 
     return tNext
@@ -654,16 +632,43 @@ function SR.exportRadioHawk(_data)
     return _data;
 end
 
+function SR.exportRadioM2000C(_data)
 
-function LuaExportBeforeNextFrame()
+    _data.radios[1].name = "UHF"
+    _data.radios[1].frequency = SR.getRadioFrequency(20)
+    _data.radios[1].modulation = 0
+    _data.radios[1].volume = SR.getRadioVolume(0, 706,{0.0,1.0},false)
 
-    -- Chain previously-included export as
-    -- Source DCS-Bios
-    if _prevExport.LuaExportBeforeNextFrame then
-        _prevExport.LuaExportBeforeNextFrame()
+    _data.radios[2].name = "V/UHF"
+    _data.radios[2].frequency =  SR.getRadioFrequency(19)
+    _data.radios[2].modulation = 0
+    _data.radios[2].volume = SR.getRadioVolume(0, 707,{0.0,1.0},false)
+
+    _data.radios[3].name = "N/A"
+    _data.radios[3].frequency =  1
+    _data.radios[3].modulation = 0
+    _data.radios[3].volume = 0
+
+    local _switch = SR.getButtonPosition(700)
+
+    if _switch == 1 then
+        _data.selected = 0
+    else
+        _data.selected = 1
     end
 
+    --guard mode for V/UHF Radio
+    local uhfModeKnob = SR.getSelectorPosition(446,0.25) -- TODO!
+	if uhfModeKnob == 2 and _data.radios[2].frequency > 1000 then
+		_data.radios[2].secondaryFrequency = 243.0*1000000 
+	end
+
+    return _data
+
+
 end
+
+
 
 function SR.getRadioVolume(_deviceId, _arg,_minMax,_invert)
 

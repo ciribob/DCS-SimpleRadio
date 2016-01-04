@@ -27,7 +27,7 @@ namespace Installer
     {
         const string REG_PATH = "HKEY_CURRENT_USER\\SOFTWARE\\DCS-SimpleRadio";
 
-        const string version = "1.2.4";
+        const string version = "1.3.0";
 
         string currentPath;
         string currentDirectory;
@@ -219,7 +219,7 @@ namespace Installer
 
             if (beta)
             {
-                dcsPath = dcsPath + ".openbeta";
+                dcsPath = dcsPath + ".openalpha";
             }
 
             if (!Directory.Exists(dcsPath))
@@ -277,10 +277,14 @@ namespace Installer
             {
                 String contents = File.ReadAllText(path + "\\Export.lua");
 
-                if (contents.Contains("Scripts\\DCS-SimpleRadio\\SimpleRadioInit.lua"))
+                if (contents.Contains("SimpleRadioInit.lua"))
                 {
-                    write = false;
+                    
+                    contents = contents.Replace("dofile(lfs.writedir()..[[Scripts\\DCS-SimpleRadio\\SimpleRadioInit.lua]])", "");
+                    contents = contents.Replace("local dcsSr=require('lfs');dofile(dcsSr.writedir()..[[Scripts\\DCS-SimpleRadio\\SimpleRadioInit.lua]])", "");
+                    contents = contents.Trim();
 
+                    File.WriteAllText(path + "\\Export.lua", contents);
                 }
             }
 
@@ -288,7 +292,7 @@ namespace Installer
             {
                 StreamWriter writer = File.AppendText(path + "\\Export.lua");
 
-                writer.WriteLine("\n\n dofile(lfs.writedir()..[[Scripts\\DCS-SimpleRadio\\SimpleRadioInit.lua]])");
+                writer.WriteLine("\n  local dcsSr=require('lfs');dofile(dcsSr.writedir()..[[Scripts\\DCS-SimpleRadio\\SimpleRadioInit.lua]])");
                 writer.Close();
             }
 
@@ -369,7 +373,7 @@ namespace Installer
 
             string scriptsPath = dcsPath + "\\Scripts";
 
-            RemoveScripts(dcsPath + ".openbeta\\Scripts");
+            RemoveScripts(dcsPath + ".openalpha\\Scripts");
             RemoveScripts(dcsPath + "\\Scripts");
 
             RemovePlugin(teamspeakPlugins);
@@ -393,9 +397,11 @@ namespace Installer
             {
                 String contents = File.ReadAllText(path + "\\Export.lua");
 
-                if (contents.Contains("Scripts\\DCS-SimpleRadio\\SimpleRadioInit.lua"))
+                if (contents.Contains("SimpleRadioInit.lua"))
                 {
                     contents = contents.Replace("dofile(lfs.writedir()..[[Scripts\\DCS-SimpleRadio\\SimpleRadioInit.lua]])","");
+                    contents = contents.Replace("local dcsSr=require('lfs');dofile(dcsSr.writedir()..[[Scripts\\DCS-SimpleRadio\\SimpleRadioInit.lua]])", "");
+                    contents = contents.Trim();
 
                     File.WriteAllText(path + "\\Export.lua", contents);
                 }
