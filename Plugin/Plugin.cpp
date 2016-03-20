@@ -382,11 +382,11 @@ namespace SimpleRadio
 
         if (this->allowNonPlayers)
         {
-            this->teamspeak.printMessageToCurrentTab("Un-muting clients NOT in an aircraft");
+			MuteOffNonUsers();
         }
         else
         {
-            this->teamspeak.printMessageToCurrentTab("Muting clients NOT in an aircraft");
+			MuteOnNonUsers();
         }
     }
 
@@ -395,11 +395,11 @@ namespace SimpleRadio
 
         if (this->forceOn)
         {
-            this->teamspeak.printMessageToCurrentTab("Forcing ON in Ground Mode");
+			ForceON();
         }
         else
         {
-            this->teamspeak.printMessageToCurrentTab("Forcing OFF in Ground Mode");
+			ForceOFF();
         }
     }
 
