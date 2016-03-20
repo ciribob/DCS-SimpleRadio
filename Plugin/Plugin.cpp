@@ -510,6 +510,7 @@ namespace SimpleRadio
 
 
 		RadioInformation &selectedRadio = this->teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected];
+	
 
 		if (selectedRadio.frequency < 100 || selectedRadio.frequency == 0 || this->myClientData.hasRadio == true || selectedRadio.modulation >= 2)
 		{
@@ -1167,7 +1168,6 @@ namespace SimpleRadio
 
 						ReceiveBuf[ByteReceived - 1] = 0; //add terminator
 
-						//this->teamspeak.printMessageToCurrentTab(ReceiveBuf);
 						ClientMetaData clientMetaData = ClientMetaData::deserialize(ReceiveBuf, true);
 
 						processUDPUpdate(clientMetaData);
@@ -1176,7 +1176,10 @@ namespace SimpleRadio
 
 						if (this->shouldSendUpdate(clientMetaData))
 						{
-							//this->teamspeak.printMessageToCurrentTab("Sending...");
+							//this->teamspeak.printMessageToCurrentTab("Received:");
+							//this->teamspeak.printMessageToCurrentTab(ReceiveBuf);
+							//this->teamspeak.printMessageToCurrentTab("Sent:");
+							//this->teamspeak.printMessageToCurrentTab(serialised.c_str());
 							//////Send Client METADATA
 							if (this->teamspeak.setClientSelfVariableAsString(serverHandlerID, CLIENT_META_DATA, serialised.c_str()) != ERROR_ok) {
 								//printf("Error setting CLIENT_META_DATA!!!\n");
@@ -1357,8 +1360,7 @@ namespace SimpleRadio
 					this->teamSpeakControlledClientData.radio[i].frequency = clientMetaData.radio[i].frequency;
 					this->teamSpeakControlledClientData.radio[i].volume = clientMetaData.radio[i].volume;
 					this->teamSpeakControlledClientData.radio[i].secondaryFrequency = clientMetaData.radio[i].secondaryFrequency;
-					this->teamSpeakControlledClientData.radio[i].freqMin = clientMetaData.radio[i].freqMin;
-					this->teamSpeakControlledClientData.radio[i].freqMax = clientMetaData.radio[i].freqMax;
+					
 				}
 
 				//init selected
@@ -1375,8 +1377,10 @@ namespace SimpleRadio
 				clientMetaData.radio[i].frequency = this->teamSpeakControlledClientData.radio[i].frequency;
 				clientMetaData.radio[i].volume = this->teamSpeakControlledClientData.radio[i].volume;
 				clientMetaData.radio[i].secondaryFrequency = this->teamSpeakControlledClientData.radio[i].secondaryFrequency;
-				clientMetaData.radio[i].freqMin = this->teamSpeakControlledClientData.radio[i].freqMin;
-				clientMetaData.radio[i].freqMax = this->teamSpeakControlledClientData.radio[i].freqMax;
+
+				//keep this up todate
+				this->teamSpeakControlledClientData.radio[i].freqMin = clientMetaData.radio[i].freqMin;
+				this->teamSpeakControlledClientData.radio[i].freqMax = clientMetaData.radio[i].freqMax;
 			}
 
 			//overrwrite selected

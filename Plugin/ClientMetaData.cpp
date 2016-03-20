@@ -47,8 +47,8 @@ namespace SimpleRadio
 			current["modulation"] = this->radio[i].modulation;
 			current["volume"] = this->radio[i].volume;
 			current["secondaryFrequency"] = this->radio[i].secondaryFrequency;
-			current["freqMin"] = this->radio[i].freqMin;
-			current["freqMax"] = this->radio[i].freqMax;
+		//	current["freqMin"] = this->radio[i].freqMin;
+	//		current["freqMax"] = this->radio[i].freqMax;
 			array.append(current);
 		}
 
