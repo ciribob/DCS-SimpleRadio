@@ -183,6 +183,10 @@ namespace RadioGui
                 {
                     radioFrequency.Text = "INTERCOM";
                 }
+                else if(currentRadio.modulation >=3)
+                {
+                    radioFrequency.Text = "NO RADIO";
+                }
                 else
                 {
                     radioFrequency.Text = (currentRadio.frequency / MHz).ToString("0.000") + (currentRadio.modulation == 0 ? "AM" : "FM");

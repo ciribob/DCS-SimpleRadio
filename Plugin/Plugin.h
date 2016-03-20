@@ -54,11 +54,18 @@ namespace SimpleRadio
 		std::string getClientMetaData(uint64 serverConnectionHandlerId, uint64 clientId) const;
 
 		void toggleMuteOnNonUsers();
+		void MuteOnNonUsers();
+		void MuteOffNonUsers();
 
 		void toggleForceON();
 
+		void ForceON();
+		void ForceOFF();
+
 		void onClientUpdated(uint64 serverConnectionHandlerId, anyID clientId, anyID invokerId);
 		void onHotKeyEvent(const char * hotkeyCommand);
+
+		double changeFrequency(double amount, RadioInformation radio);
 
 		void onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerId, anyID clientId, short* samples, int sampleCount, int channels);
 

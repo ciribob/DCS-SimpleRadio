@@ -41,7 +41,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.3.0";
+	const char* Plugin::VERSION = "1.4.0";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -68,8 +68,6 @@ namespace SimpleRadio
 			//Delete other things?!
 			delete[] this->pluginId;
 		}
-
-		
 	}
 
 	void Plugin::start()
@@ -155,7 +153,7 @@ namespace SimpleRadio
 
 	}
 
-	void Plugin::writeFilterSetting(bool filterSetting) {\
+	void Plugin::writeFilterSetting(bool filterSetting) {
 		RegHelper helper;
 		if (filterSetting)
 		{
@@ -205,8 +203,6 @@ namespace SimpleRadio
 		size_t len = strlen(id);
 		this->pluginId = new char[len + 1];
 		strcpy_s(this->pluginId, len + 1, id);
-
-
 	}
 
 	bool Plugin::processCommand(uint64 serverConnectionHandlerId, const char* command)
@@ -245,8 +241,6 @@ namespace SimpleRadio
 
 			return true;
 		}
-
-
 		return false;
 	}
 
@@ -257,7 +251,7 @@ namespace SimpleRadio
 		infoDataStr.precision(2);
 		infoDataStr.setf(infoDataStr.fixed, infoDataStr.floatfield);
 		//infoDataStr.fixed = 3;
-		
+
 
 		try
 		{
@@ -265,7 +259,7 @@ namespace SimpleRadio
 
 			anyID myID;
 			if (this->teamspeak.getClientID(serverConnectionHandlerId, &myID) != ERROR_ok) {
-				
+
 				return "\nStatus: [B]Not connected to a server[/B]";
 			}
 
@@ -382,35 +376,67 @@ namespace SimpleRadio
 		return data;
 	}
 
-	void Plugin::toggleMuteOnNonUsers()
-	{
-		this->allowNonPlayers = !this->allowNonPlayers;
+    void Plugin::toggleMuteOnNonUsers()
+    {
+        this->allowNonPlayers = !this->allowNonPlayers;
 
-		if (this->allowNonPlayers)
-		{
-			this->teamspeak.printMessageToCurrentTab("Un-muting clients NOT in an aircraft");
-		}
-		else
-		{
-			this->teamspeak.printMessageToCurrentTab("Muting clients NOT in an aircraft");
-		}
+        if (this->allowNonPlayers)
+        {
+            this->teamspeak.printMessageToCurrentTab("Un-muting clients NOT in an aircraft");
+        }
+        else
+        {
+            this->teamspeak.printMessageToCurrentTab("Muting clients NOT in an aircraft");
+        }
+    }
+
+    void Plugin::toggleForceON() {
+        this->forceOn = !this->forceOn;
+
+        if (this->forceOn)
+        {
+            this->teamspeak.printMessageToCurrentTab("Forcing ON in Ground Mode");
+        }
+        else
+        {
+            this->teamspeak.printMessageToCurrentTab("Forcing OFF in Ground Mode");
+        }
+    }
+
+	void Plugin::MuteOnNonUsers()
+	{
+		this->allowNonPlayers = false;
+		this->teamspeak.printMessageToCurrentTab("Muting clients NOT in an aircraft");
+		plugin.disableMenuItem(10);
+		plugin.enableMenuItem(11);
 	}
 
-	void Plugin::toggleForceON() {
-		this->forceOn = !this->forceOn;
+	void Plugin::MuteOffNonUsers()
+	{
+		this->allowNonPlayers = true;
+		this->teamspeak.printMessageToCurrentTab("Un-muting clients NOT in an aircraft");
+		plugin.disableMenuItem(11);
+		plugin.enableMenuItem(10);
+	}
 
-		if (this->forceOn)
-		{
-			this->teamspeak.printMessageToCurrentTab("Forcing ON in Ground Mode");
-		}
-		else
-		{
-			this->teamspeak.printMessageToCurrentTab("Forcing OFF in Ground Mode");
-		}
+	void Plugin::ForceON()
+	{
+		this->forceOn = true;
+		this->teamspeak.printMessageToCurrentTab("Forcing ON in Ground Mode");
+		plugin.disableMenuItem(12);
+		plugin.enableMenuItem(13);
+	}
+
+	void Plugin::ForceOFF()
+	{
+		this->forceOn = false;
+		this->teamspeak.printMessageToCurrentTab("Forcing OFF in Ground Mode");
+		plugin.disableMenuItem(13);
+		plugin.enableMenuItem(12);
 	}
 
 	void Plugin::onHotKeyEvent(const char * hotkeyCommand) {
-	
+
 		this->sendHotKeyToGUI(hotkeyCommand);
 
 		if (strcmp("DCS-SR-TOGGLE-MUTE", hotkeyCommand) == 0)
@@ -425,6 +451,34 @@ namespace SimpleRadio
 			return;
 
 		}
+		else if (strcmp("DCS-SR-MUTE-ENABLE", hotkeyCommand) == 0)
+        {
+            this->MuteOnNonUsers();
+            return;
+        }
+        else if (strcmp("DCS-SR-MUTE-DISABLE", hotkeyCommand) == 0)
+        {
+            this->MuteOffNonUsers();
+            return;
+        }
+        else if (strcmp("DCS-SR-FORCE-ON-ENABLE", hotkeyCommand) == 0)
+        {
+            this->ForceON();
+            return;
+        }
+        else if (strcmp("DCS-SR-FORCE-ON-DISABLE", hotkeyCommand) == 0)
+        {
+            this->ForceOFF();
+            return;
+        }
+        else if (strcmp("DCS-SR-PLUGIN-ENABLE", hotkeyCommand) == 0)
+        {
+            this->disablePlugin = false;
+            this->teamspeak.printMessageToCurrentTab("Enabling DCS-SimpleRadio");
+            plugin.disableMenuItem(5);
+            plugin.enableMenuItem(6);
+            return;
+        }
 		else if (strcmp("DCS-SR-TOGGLE-ENABLE", hotkeyCommand) == 0)
 		{
 			this->disablePlugin = !this->disablePlugin;
@@ -438,7 +492,14 @@ namespace SimpleRadio
 				this->teamspeak.printMessageToCurrentTab("Enabling DCS-SimpleRadio");
 			}
 			return;
-
+		}
+		else if (strcmp("DCS-SR-PLUGIN-DISABLE", hotkeyCommand) == 0)
+		{
+			this->disablePlugin = true;
+			this->teamspeak.printMessageToCurrentTab("Disabling DCS-SimpleRadio");
+			plugin.disableMenuItem(6);
+			plugin.enableMenuItem(5);
+			return;
 		}
 
 		if (teamSpeakControlledClientData.selected < 0)
@@ -450,7 +511,7 @@ namespace SimpleRadio
 
 		RadioInformation &selectedRadio = this->teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected];
 
-		if (selectedRadio.frequency < 100 || selectedRadio.frequency == 0 || this->myClientData.hasRadio == true)
+		if (selectedRadio.frequency < 100 || selectedRadio.frequency == 0 || this->myClientData.hasRadio == true || selectedRadio.modulation >= 2)
 		{
 			//IGNORE
 			return;
@@ -463,7 +524,7 @@ namespace SimpleRadio
 		if (strcmp("DCS-SR-FREQ-10-UP", hotkeyCommand) == 0)
 		{
 
-			selectedRadio.frequency = selectedRadio.frequency + (10.0 * MHZ);
+			selectedRadio.frequency = changeFrequency((10.0 * MHZ), selectedRadio);
 
 			sprintf_s(buffer, 256, "Up 10MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
 
@@ -471,7 +532,7 @@ namespace SimpleRadio
 		}
 		else if (strcmp("DCS-SR-FREQ-10-DOWN", hotkeyCommand) == 0)
 		{
-			selectedRadio.frequency = selectedRadio.frequency - (10.0 * MHZ);
+			selectedRadio.frequency = changeFrequency((-10.0 * MHZ), selectedRadio);
 
 			sprintf_s(buffer, 256, "Down 10MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
 
@@ -479,7 +540,7 @@ namespace SimpleRadio
 		}
 		else if (strcmp("DCS-SR-FREQ-1-UP", hotkeyCommand) == 0)
 		{
-			selectedRadio.frequency = selectedRadio.frequency + (1.0 * MHZ);
+			selectedRadio.frequency = changeFrequency((1.0 * MHZ), selectedRadio);
 
 			sprintf_s(buffer, 256, "Up 1MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
 
@@ -487,7 +548,7 @@ namespace SimpleRadio
 		}
 		else if (strcmp("DCS-SR-FREQ-1-DOWN", hotkeyCommand) == 0)
 		{
-			selectedRadio.frequency = selectedRadio.frequency - (1.0 * MHZ);
+			selectedRadio.frequency = changeFrequency((-1.0 * MHZ), selectedRadio);
 
 			sprintf_s(buffer, 256, "Down 1MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
 
@@ -495,7 +556,7 @@ namespace SimpleRadio
 		}
 		else if (strcmp("DCS-SR-FREQ-01-UP", hotkeyCommand) == 0)
 		{
-			selectedRadio.frequency = selectedRadio.frequency + (0.1 * MHZ);
+			selectedRadio.frequency = changeFrequency((0.1 * MHZ), selectedRadio);
 
 			sprintf_s(buffer, 256, "UP 0.1MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
 
@@ -503,7 +564,7 @@ namespace SimpleRadio
 		}
 		else if (strcmp("DCS-SR-FREQ-01-DOWN", hotkeyCommand) == 0)
 		{
-			selectedRadio.frequency = selectedRadio.frequency - (0.1 * MHZ);
+			selectedRadio.frequency = changeFrequency((-0.1 * MHZ), selectedRadio);
 
 			sprintf_s(buffer, 256, "Down 0.1MHz - Current Freq (MHz): %.4f", selectedRadio.frequency / MHZ);
 
@@ -557,8 +618,28 @@ namespace SimpleRadio
 
 			this->teamspeak.printMessageToCurrentTab("Volume Down");
 		}
+	}
 
+	//limit frequencies to a known limit
+	double Plugin::changeFrequency(double amount, RadioInformation radio) {
 
+		double tempFreq = radio.frequency + amount;
+
+		if (radio.freqMax == -1 || radio.freqMax == -1)
+		{
+			return tempFreq;
+		}
+
+		if (tempFreq > radio.freqMax)
+		{
+			return radio.freqMax;
+		}
+		if (tempFreq < radio.freqMin)
+		{
+			return radio.freqMin;
+		}
+
+		return tempFreq;
 	}
 
 	void Plugin::sendUpdateToGUI()
@@ -1276,6 +1357,8 @@ namespace SimpleRadio
 					this->teamSpeakControlledClientData.radio[i].frequency = clientMetaData.radio[i].frequency;
 					this->teamSpeakControlledClientData.radio[i].volume = clientMetaData.radio[i].volume;
 					this->teamSpeakControlledClientData.radio[i].secondaryFrequency = clientMetaData.radio[i].secondaryFrequency;
+					this->teamSpeakControlledClientData.radio[i].freqMin = clientMetaData.radio[i].freqMin;
+					this->teamSpeakControlledClientData.radio[i].freqMax = clientMetaData.radio[i].freqMax;
 				}
 
 				//init selected
@@ -1292,6 +1375,8 @@ namespace SimpleRadio
 				clientMetaData.radio[i].frequency = this->teamSpeakControlledClientData.radio[i].frequency;
 				clientMetaData.radio[i].volume = this->teamSpeakControlledClientData.radio[i].volume;
 				clientMetaData.radio[i].secondaryFrequency = this->teamSpeakControlledClientData.radio[i].secondaryFrequency;
+				clientMetaData.radio[i].freqMin = this->teamSpeakControlledClientData.radio[i].freqMin;
+				clientMetaData.radio[i].freqMax = this->teamSpeakControlledClientData.radio[i].freqMax;
 			}
 
 			//overrwrite selected
@@ -1393,7 +1478,7 @@ namespace SimpleRadio
 								*/
 								switch (updateCommand.cmdType) {
 								case 1:
-									this->teamSpeakControlledClientData.radio[updateCommand.radio].frequency += updateCommand.freq;
+									this->teamSpeakControlledClientData.radio[updateCommand.radio].frequency = changeFrequency(updateCommand.freq, this->teamSpeakControlledClientData.radio[updateCommand.radio]);
 									break;
 								case 2:
 									this->teamSpeakControlledClientData.radio[updateCommand.radio].volume = updateCommand.volume;
@@ -1616,7 +1701,7 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	/* Register hotkeys giving a keyword and a description.
 	* The keyword will be later passed to ts3plugin_onHotkeyEvent to identify which hotkey was triggered.
 	* The description is shown in the clients hotkey dialog. */
-	BEGIN_CREATE_HOTKEYS(15);  /* Create 15 hotkeys. Size must be correct for allocating memory. */
+	BEGIN_CREATE_HOTKEYS(21);  /* Create 21 hotkeys. Size must be correct for allocating memory. */
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select UHF AM");
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select VHF AM");
 	CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select FM");
@@ -1635,6 +1720,15 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	CREATE_HOTKEY("DCS-SR-TOGGLE-FORCE-ON", "Toggles Radio ON/OFF for Spectating or CA");
 
 	CREATE_HOTKEY("DCS-SR-TOGGLE-ENABLE", "Toggles Plugin On/Off");
+
+    CREATE_HOTKEY("DCS-SR-MUTE-ENABLE", "Mute on Outsiders");
+    CREATE_HOTKEY("DCS-SR-MUTE-DISABLE", "UnMute on Outsiders");
+
+    CREATE_HOTKEY("DCS-SR-FORCE-ON-ENABLE", "Radio ON for Spectating or CA");
+    CREATE_HOTKEY("DCS-SR-FORCE-ON-DISABLE", "Radio OFF for Spectating or CA");
+
+    CREATE_HOTKEY("DCS-SR-PLUGIN-ENABLE", "Plugin ON");
+    CREATE_HOTKEY("DCS-SR-PLUGIN-DISABLE", "Plugin OFF")
 
 	CREATE_HOTKEY("DCS-SR-VOLUME-10-UP", "VOLUME Up - 10%");
 	CREATE_HOTKEY("DCS-SR-VOLUME-10-DOWN", "VOLUME Down - 10%");
@@ -1674,25 +1768,35 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	*/
 
 
-	BEGIN_CREATE_MENUS(10)
+	BEGIN_CREATE_MENUS(13)
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 1, "Check For Update", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 2, "Show Radio Status", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 3, "Enable Radio FX", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 4, "Disable Radio FX", "");
-		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 5, "Plugin ON/OFF", "");
-		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 6, "Select UHF AM", "");
-		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 7, "Select VHF AM", "");
-		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 8, "Select FM", "");
-		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 9, "Mute/Unmute on Non Radio Users", "");
-		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 10, "Radio ON/OFF for Spectating / CA", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 5, "Plugin ON", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 6, "Plugin OFF", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 7, "Select UHF AM", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 8, "Select VHF AM", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 9, "Select FM", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 10, "Mute Non Radio Users", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 11, "UnMute Non Radio Users", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 12, "Radio ON for Spectating / CA", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 13, "Radio OFF for Spectating / CA", "");
 	END_CREATE_MENUS;
 
 	//read settings to configure the menu
 	plugin.readSettings();
 
-	plugin.disableMenuItem(6);
+	//plugin ENABLED by default
+	plugin.disableMenuItem(5);
+
 	plugin.disableMenuItem(7);
 	plugin.disableMenuItem(8);
+	plugin.disableMenuItem(9);
+
+	plugin.disableMenuItem(11); //Default - Can hear non users
+
+	plugin.disableMenuItem(13); //Default - Radio off for Spectating
 
 	/* All memory allocated in this function will be automatically released by the TeamSpeak client later by calling ts3plugin_freeMemory */
 }
@@ -1715,22 +1819,31 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 			plugin.writeFilterSetting(false);
 			break;
 		case 5:
-			plugin.onHotKeyEvent("DCS-SR-TOGGLE-ENABLE");
+			plugin.onHotKeyEvent("DCS-SR-PLUGIN-ENABLE");
 			break;
 		case 6:
-			plugin.onHotKeyEvent("DCS-SR-TRANSMIT-UHF");
+			plugin.onHotKeyEvent("DCS-SR-PLUGIN-DISABLE");
 			break;
 		case 7:
-			plugin.onHotKeyEvent("DCS-SR-TRANSMIT-VHF");
+			plugin.onHotKeyEvent("DCS-SR-TRANSMIT-UHF");
 			break;
 		case 8:
-			plugin.onHotKeyEvent("DCS-SR-TRANSMIT-FM");
+			plugin.onHotKeyEvent("DCS-SR-TRANSMIT-VHF");
 			break;
 		case 9:
-			plugin.onHotKeyEvent("DCS-SR-TOGGLE-MUTE");
+			plugin.onHotKeyEvent("DCS-SR-TRANSMIT-FM");
 			break;
 		case 10:
-			plugin.onHotKeyEvent("DCS-SR-TOGGLE-FORCE-ON");
+			plugin.onHotKeyEvent("DCS-SR-MUTE-ENABLE");
+			break;
+		case 11:
+			plugin.onHotKeyEvent("DCS-SR-MUTE-DISABLE");
+			break;
+		case 12:
+			plugin.onHotKeyEvent("DCS-SR-FORCE-ON-ENABLE");
+			break;
+		case 13:
+			plugin.onHotKeyEvent("DCS-SR-FORCE-ON-DISABLE");
 			break;
 		default:
 			break;
