@@ -1,6 +1,9 @@
--- Version 1.3.0
+-- Version 1.4.1
+-- Special thanks to Cap. Zeen, Tarres and Splash for all the help
+-- with getting the radio information :)
 SR = {}
 
+SR.enableInternalPTT = false -- set this to TRUE to use the in-cockpit PTT
 SR.unicast = false -- if you've setup DCS Correctly and the plugin isn't talking to DCS,
 -- set unicast to true and type "/sr switch" in the TeamSpeak chat window
 
@@ -32,7 +35,7 @@ local _prevExport = {}
 _prevExport.LuaExportActivityNextEvent = LuaExportActivityNextEvent
 
 LuaExportActivityNextEvent = function(tCurrent)
-    local tNext = tCurrent + 0.3
+    local tNext = tCurrent + 0.2
 
     local _status,_result = pcall(function()
 
@@ -45,9 +48,9 @@ LuaExportActivityNextEvent = function(tCurrent)
 
             radios =
             {
-                { id = 1, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1},
-                { id = 2, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1 },
-                { id = 3, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1 }
+                { id = 1, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1, freqMin = 200*1000000, freqMax = 400*1000000},
+                { id = 2, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1, freqMin = 100*1000000, freqMax = 200*1000000 },
+                { id = 3, name = "init", frequency = 0, modulation = 0, volume = 1.0, secondaryFrequency = 1, freqMin = 10*1000000, freqMax = 60*1000000 }
             },
             hasRadio = true,
             groundCommander = false,
@@ -92,6 +95,16 @@ LuaExportActivityNextEvent = function(tCurrent)
                 _update = SR.exportRadioHawk(_update)
             elseif _update.unit == "M-2000C" then
                 _update = SR.exportRadioM2000C(_update)
+			elseif _update.unit == "A-10A" then
+				_update = SR.exportRadioA10A(_update)
+			elseif _update.unit == "F-15C" then
+				_update = SR.exportRadioF15C(_update)
+			elseif _update.unit == "MiG-29A" or  _update.unit == "MiG-29S" or  _update.unit == "MiG-29G" then
+				_update = SR.exportRadioMiG29(_update)
+			elseif _update.unit == "Su-27" or  _update.unit == "Su-33" then
+				_update = SR.exportRadioSU27(_update)
+			elseif _update.unit == "Su-25" or  _update.unit == "Su-25T" then
+				_update = SR.exportRadioSU25(_update)
             else
                 -- FC 3
                 _update.radios[1].name = "FC3 UHF"
@@ -133,9 +146,9 @@ LuaExportActivityNextEvent = function(tCurrent)
                 selected = 0,
                 radios =
                 {
-                    { id = 1, name = "CA UHF", frequency = 251.0*1000000, modulation = 0,volume = 1.0, secondaryFrequency = 243.0*1000000 },
-                    { id = 2, name = "CA VHF", frequency = 124.8*1000000, modulation = 0,volume = 1.0, secondaryFrequency = 121.5*1000000 },
-                    { id = 3, name = "CA FM", frequency = 30.0*1000000, modulation = 1,volume = 1.0, secondaryFrequency = 1 }
+                    { id = 1, name = "CA UHF", frequency = 251.0*1000000, modulation = 0,volume = 1.0, secondaryFrequency = 243.0*1000000, freqMin = 200*1000000, freqMax = 400*1000000 },
+                    { id = 2, name = "CA VHF", frequency = 124.8*1000000, modulation = 0,volume = 1.0, secondaryFrequency = 121.5*1000000, freqMin = 100*1000000, freqMax = 200*1000000  },
+                    { id = 3, name = "CA FM", frequency = 30.0*1000000, modulation = 1,volume = 1.0, secondaryFrequency = 1, freqMin = 10*1000000, freqMax = 60*1000000  }
                 },
                 hasRadio = false,
                 groundCommander = true
@@ -161,6 +174,147 @@ LuaExportActivityNextEvent = function(tCurrent)
     end
 
     return tNext
+end
+
+function SR.exportRadioA10A(_data)
+    _data.radios[1].name = "AN/ARC-164 UHF"
+    _data.radios[1].frequency = 251.0*1000000 --225-399.975 MHZ
+    _data.radios[1].modulation = 0
+    _data.radios[1].secondaryFrequency = 243.0*1000000
+    _data.radios[1].volume = 1.0
+    _data.radios[1].freqMin = 225*1000000
+    _data.radios[1].freqMax = 399.975*1000000
+
+    _data.radios[2].name = "AN/ARC-186(V)"
+    _data.radios[2].frequency = 124.8*1000000 --116,00-151,975 MHz
+    _data.radios[2].modulation = 0
+    _data.radios[2].secondaryFrequency = 121.5*1000000
+    _data.radios[2].volume = 1.0
+    _data.radios[2].freqMin = 116*1000000
+    _data.radios[2].freqMax = 151.975*1000000
+
+    _data.radios[3].name = "AN/ARC-186(V)FM"
+    _data.radios[3].frequency = 30.0*1000000 --VHF/FM opera entre 30.000 y 76.000 MHz.
+    _data.radios[3].modulation = 1
+    _data.radios[3].volume = 1.0
+    _data.radios[3].freqMin = 30*1000000
+    _data.radios[3].freqMax = 76*1000000
+
+	_data.hasRadio = false;
+    _data.selected = 0
+
+    return _data
+end
+
+function SR.exportRadioMiG29(_data)
+
+    _data.radios[1].name = "R-862"
+    _data.radios[1].frequency = 251.0*1000000 --V/UHF, frequencies are: VHF range of 100 to 149.975 MHz and UHF range of 220 to 399.975 MHz
+    _data.radios[1].modulation = 0
+    _data.radios[1].secondaryFrequency = 121.5*1000000
+    _data.radios[1].volume = 1.0
+    _data.radios[1].freqMin = 100*1000000
+    _data.radios[1].freqMax = 399.975*1000000
+
+    _data.radios[2].name = "No Radio"
+    _data.radios[2].frequency = 0
+    _data.radios[2].modulation = 3
+    _data.radios[2].volume = 1.0
+
+    _data.radios[3].name = "No radio"
+    _data.radios[3].frequency = 0
+    _data.radios[3].modulation = 3
+    _data.radios[3].volume = 1
+
+	_data.hasRadio = false;
+    _data.selected = 0
+
+    return _data
+end
+
+function SR.exportRadioSU25(_data)
+
+    _data.radios[1].name = "R-862"
+    _data.radios[1].frequency = 251.0*1000000 --V/UHF, frequencies are: VHF range of 100 to 149.975 MHz and UHF range of 220 to 399.975 MHz
+    _data.radios[1].modulation = 0
+    _data.radios[1].secondaryFrequency = 121.5*1000000
+    _data.radios[1].volume = 1.0
+    _data.radios[1].freqMin = 100*1000000
+    _data.radios[1].freqMax = 399.975*1000000
+
+    _data.radios[2].name = "R-828"
+    _data.radios[2].frequency = 30.0*1000000 --20 - 60 MHz.
+    _data.radios[2].modulation = 1
+    _data.radios[2].volume = 1.0
+    _data.radios[2].freqMin = 20*1000000
+    _data.radios[2].freqMax = 60*1000000
+
+    _data.radios[3].name = "No radio"
+    _data.radios[3].frequency = 0
+    _data.radios[3].modulation = 3 -- no radio
+    _data.radios[3].volume = 1
+
+	_data.hasRadio = false;
+    _data.selected = 0
+
+    return _data
+end
+
+function SR.exportRadioSU27(_data)
+
+    _data.radios[1].name = "R-800"
+    _data.radios[1].frequency = 251.0*1000000 --V/UHF, frequencies are: VHF range of 100 to 149.975 MHz and UHF range of 220 to 399.975 MHz
+    _data.radios[1].modulation = 0
+    _data.radios[1].secondaryFrequency = 121.5*1000000
+    _data.radios[1].volume = 1.0
+    _data.radios[1].freqMin = 100*1000000
+    _data.radios[1].freqMax = 399.975*1000000
+
+    _data.radios[2].name = "R-864"
+    _data.radios[2].frequency = 3.5*1000000 --HF frequencies in the 3-10Mhz, like the Jadro
+    _data.radios[2].modulation = 0
+    _data.radios[2].volume = 1.0
+    _data.radios[2].freqMin = 3*1000000
+    _data.radios[2].freqMax = 10*1000000
+
+
+    _data.radios[3].name = "No radio"
+    _data.radios[3].frequency = 0
+    _data.radios[3].modulation = 3
+    _data.radios[3].volume = 1
+
+	_data.hasRadio = false;
+    _data.selected = 0
+
+    return _data
+end
+
+function SR.exportRadioF15C(_data)
+
+    _data.radios[1].name = "UHF-1"
+    _data.radios[1].frequency = 251.0*1000000 --225 to 399.975MHZ
+    _data.radios[1].modulation = 0
+    _data.radios[1].secondaryFrequency = 243.0*1000000
+    _data.radios[1].volume = 1.0
+    _data.radios[1].freqMin = 225*1000000
+    _data.radios[1].freqMax = 399.975*1000000
+
+    _data.radios[2].name = "UHF-2"
+    _data.radios[2].frequency = 231.0*1000000 --225 to 399.975MHZ
+    _data.radios[2].modulation = 0
+    _data.radios[2].freqMin = 225*1000000
+    _data.radios[2].freqMax = 399.975*1000000
+
+
+    _data.radios[3].name = "No radio"
+    _data.radios[3].frequency = 0
+    _data.radios[3].modulation = 3 -- to avoid to show a number until we can "hide the non radios"
+    _data.radios[3].volume = 1
+
+	_data.hasRadio = false;
+    _data.selected = 0
+
+    return _data
 end
 
 function SR.exportRadioUH1H(_data)
@@ -223,12 +377,12 @@ function SR.exportRadioKA50(_data)
 
     _data.radios[2].name = "R-828"
     _data.radios[2].frequency = SR.getRadioFrequency(49,50000)
-    _data.radios[2].modulation = 0
+    _data.radios[2].modulation = 1
     _data.radios[2].volume = SR.getRadioVolume(0, 372,{0.0,1.0},false)
 
     _data.radios[3].name = "N/A"
     _data.radios[3].frequency = 1
-    _data.radios[3].modulation = 1
+    _data.radios[3].modulation = 3
     _data.radios[3].volume = 1.0
 
     local switch = _panel:get_argument_value(428)
@@ -261,7 +415,7 @@ function SR.exportRadioMI8(_data)
 
     _data.radios[2].name = "R-828"
     _data.radios[2].frequency = SR.getRadioFrequency(39,50000)
-    _data.radios[2].modulation = 0
+    _data.radios[2].modulation = 1
     _data.radios[2].volume = SR.getRadioVolume(0, 737,{0.0,1.0},false)
 
     _data.radios[3].name = "JADRO-1A"
@@ -306,17 +460,21 @@ function SR.exportRadioL39(_data)
 
     _data.radios[3].name = "No Radio"
     _data.radios[3].frequency =1.0
-    _data.radios[3].modulation = 0
+    _data.radios[3].modulation = 3
     _data.radios[3].volume = 0
 
+    -- Intercom button depressed
     if(SR.getButtonPosition(133) > 0.5 or SR.getButtonPosition(546) > 0.5) then
         _data.selected = 1
+    elseif (SR.getButtonPosition(134) > 0.5 or SR.getButtonPosition(547) > 0.5) then
+        _data.selected= 0
     else
-        _data.selected = 0
+        if SR.enableInternalPTT then
+            _data.selected = -1 -- PTT Not pressed
+        else
+            _data.selected = 0
+        end
     end
-
-
-    --SR.log(SR.getButtonPosition(133) .." - "..  SR.getButtonPosition(546))
 
     return _data
 end
@@ -334,7 +492,7 @@ function SR.exportRadioA10C(_data)
     _data.radios[2].modulation = 0
     _data.radios[2].volume = SR.getRadioVolume(0, 133,{0.0,1.0},false)
 
-    _data.radios[3].name = "FM"
+    _data.radios[3].name = "AN/ARC-186(V)FM"
     _data.radios[3].frequency =  SR.getRadioFrequency(56)
     _data.radios[3].modulation = 1
     _data.radios[3].volume = SR.getRadioVolume(0, 147,{0.0,1.0},false)
@@ -362,7 +520,6 @@ function SR.exportRadioA10C(_data)
     return _data
 end
 
-
 function SR.exportRadioF86Sabre(_data)
 
     _data.radios[1].name = "AN/ARC-27"
@@ -372,11 +529,11 @@ function SR.exportRadioF86Sabre(_data)
 
     _data.radios[2].name = "N/A"
     _data.radios[2].frequency = 1
-    _data.radios[2].modulation = 0
+    _data.radios[2].modulation = 3
 
     _data.radios[3].name = "N/A"
     _data.radios[3].frequency =  1
-    _data.radios[3].modulation = 0
+    _data.radios[3].modulation = 3
 
     _data.radios[2].volume = 1.0
     _data.radios[3].volume = 1.0
@@ -401,42 +558,57 @@ function SR.exportRadioMIG15(_data)
 
     _data.radios[2].name = "N/A"
     _data.radios[2].frequency = 1
-    _data.radios[2].modulation = 0
+    _data.radios[2].modulation = 3
 
     _data.radios[3].name = "N/A"
     _data.radios[3].frequency =  1
-    _data.radios[3].modulation = 0
+    _data.radios[3].modulation = 3
 
     _data.radios[2].volume = 1.0
     _data.radios[3].volume = 1.0
 
-    _data.noMicSwitch = true;
-
     _data.selected = 0
+
+    if SR.enableInternalPTT then
+        -- Check PTT
+        if(SR.getButtonPosition(202)) > 0.5 then
+            _data.selected = 0
+        else
+            _data.selected = -1
+        end
+    end
+
 
     return _data;
 end
 
 function SR.exportRadioMIG21(_data)
 
-    _data.radios[1].name = "R-828"
+    _data.radios[1].name = "R-832"
     _data.radios[1].frequency =  SR.getRadioFrequency(22)
     _data.radios[1].modulation = 0
     _data.radios[1].volume = SR.getRadioVolume(0, 210,{0.0,1.0},false)
 
     _data.radios[2].name = "N/A"
     _data.radios[2].frequency = 1
-    _data.radios[2].modulation = 0
+    _data.radios[2].modulation = 3
 
     _data.radios[3].name = "N/A"
     _data.radios[3].frequency =  1
-    _data.radios[3].modulation = 0
-
+    _data.radios[3].modulation = 3
 
     _data.radios[2].volume = 1.0
     _data.radios[3].volume = 1.0
 
     _data.selected = 0
+
+    if SR.enableInternalPTT then
+        if(SR.getButtonPosition(315)) > 0.5 then
+            _data.selected = 0
+        else
+            _data.selected = -1
+        end
+    end
 
     return _data;
 end
@@ -450,17 +622,25 @@ function SR.exportRadioP51(_data)
 
     _data.radios[2].name = "N/A"
     _data.radios[2].frequency = 1
-    _data.radios[2].modulation = 0
+    _data.radios[2].modulation = 3
 
     _data.radios[3].name = "N/A"
     _data.radios[3].frequency =  1
-    _data.radios[3].modulation = 1
+    _data.radios[3].modulation = 3
 
 
     _data.radios[2].volume = 1.0
     _data.radios[3].volume = 1.0
 
     _data.selected = 0
+
+    if SR.enableInternalPTT then
+        if(SR.getButtonPosition(44)) > 0.5 then
+            _data.selected = 0
+        else
+            _data.selected = -1
+        end
+    end
 
     return _data;
 end
@@ -474,11 +654,11 @@ function SR.exportRadioFW190(_data)
 
     _data.radios[2].name = "N/A"
     _data.radios[2].frequency = 1
-    _data.radios[2].modulation = 0
+    _data.radios[2].modulation = 3
 
     _data.radios[3].name = "N/A"
     _data.radios[3].frequency =  1
-    _data.radios[3].modulation = 0
+    _data.radios[3].modulation = 3
 
 
     _data.radios[2].volume = 1.0
@@ -498,11 +678,11 @@ function SR.exportRadioBF109(_data)
 
     _data.radios[2].name = "N/A"
     _data.radios[2].frequency = 1
-    _data.radios[2].modulation = 0
+    _data.radios[2].modulation = 3
 
     _data.radios[3].name = "N/A"
     _data.radios[3].frequency =  1
-    _data.radios[3].modulation = 0
+    _data.radios[3].modulation = 3
 
 
     _data.radios[2].volume = 1.0
@@ -590,7 +770,6 @@ function SR.exportRadioC101(_data)
 
     return _data;
 end
-
 
 function SR.exportRadioHawk(_data)
 
