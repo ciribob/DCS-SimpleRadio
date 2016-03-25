@@ -1,4 +1,4 @@
--- Version 1.4.1
+-- Version 1.4.2
 -- Special thanks to Cap. Zeen, Tarres and Splash for all the help
 -- with getting the radio information :)
 SR = {}
@@ -247,7 +247,7 @@ function SR.exportRadioSU25(_data)
     _data.radios[2].modulation = 1
     _data.radios[2].volume = 1.0
     _data.radios[2].freqMin = 20*1000000
-    _data.radios[2].freqMax = 60*1000000
+    _data.radios[2].freqMax = 59.975*1000000
 
     _data.radios[3].name = "No radio"
     _data.radios[3].frequency = 0
@@ -545,6 +545,15 @@ function SR.exportRadioF86Sabre(_data)
 	if uhfModeKnob == 2 and _data.radios[1].frequency > 1000 then
 		_data.radios[1].secondaryFrequency = 243.0*1000000 
 	end
+
+    if SR.enableInternalPTT then
+        -- Check PTT
+        if(SR.getButtonPosition(213)) > 0.5 then
+            _data.selected = 0
+        else
+            _data.selected = -1
+        end
+    end
 
     return _data;
 end

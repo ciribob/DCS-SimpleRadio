@@ -41,7 +41,7 @@ static SimpleRadio::Plugin plugin;
 namespace SimpleRadio
 {
 	const char* Plugin::NAME = "DCS-SimpleRadio";
-	const char* Plugin::VERSION = "1.4.1";
+	const char* Plugin::VERSION = "1.4.2";
 	const char* Plugin::AUTHOR = "Ciribob - GitHub.com/ciribob";
 	const char* Plugin::DESCRIPTION = "DCS-SimpleRadio ";
 	const char* Plugin::COMMAND_KEYWORD = "sr";
@@ -275,7 +275,7 @@ namespace SimpleRadio
 
 			//do we have any valid update at all and when was it last valid?
 			//clean up if more than 15 seconds have passed
-			if (clientInfoData.lastUpdate > 5000ull && clientInfoData.lastUpdate < 15000ull)
+			if (clientInfoData.lastUpdate > 5000ull && (GetTickCount64() - clientInfoData.lastUpdate) < 15000ull)
 			{			
 				const double MHZ = 1000000;
 
@@ -352,7 +352,23 @@ namespace SimpleRadio
 			}
 			else
 			{
-				return  "\nStatus: [B]Not in game or not in Aircraft[/B]";
+				if (myID == clientId)
+				{
+					if (this->disablePlugin)
+					{
+						return "Status: Plugin [B][color=red]DISABLED[/color][/B]";
+					}
+					else
+					{
+						return  "Status: [B]Not in game or not in Aircraft[/B]";
+					}
+					
+				}
+				else
+				{
+					return  "Status: [B]Not in game or not in Aircraft[/B]";
+				}
+
 			}
 		}
 		catch (...)

@@ -27,7 +27,7 @@ namespace Installer
     {
         const string REG_PATH = "HKEY_CURRENT_USER\\SOFTWARE\\DCS-SimpleRadio";
 
-        const string version = "1.4.1";
+        const string version = "1.4.2";
 
         string currentPath;
         string currentDirectory;
