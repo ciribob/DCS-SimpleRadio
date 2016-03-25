@@ -273,8 +273,9 @@ namespace SimpleRadio
 				clientInfoData = this->connectedClient.at(clientId);
 			}
 
-			//do we have any valid update at all
-			if (clientInfoData.lastUpdate > 5000ull)
+			//do we have any valid update at all and when was it last valid?
+			//clean up if more than 15 seconds have passed
+			if (clientInfoData.lastUpdate > 5000ull && clientInfoData.lastUpdate < 15000ull)
 			{			
 				const double MHZ = 1000000;
 
@@ -351,7 +352,7 @@ namespace SimpleRadio
 			}
 			else
 			{
-				return  "\nStatus: [B]Not In Game[/B]";
+				return  "\nStatus: [B]Not in game or not in Aircraft[/B]";
 			}
 		}
 		catch (...)
@@ -486,10 +487,14 @@ namespace SimpleRadio
 			if (this->disablePlugin)
 			{
 				this->teamspeak.printMessageToCurrentTab("Disabling DCS-SimpleRadio");
+				plugin.disableMenuItem(6);
+				plugin.enableMenuItem(5);
 			}
 			else
 			{
 				this->teamspeak.printMessageToCurrentTab("Enabling DCS-SimpleRadio");
+				plugin.disableMenuItem(5);
+				plugin.enableMenuItem(6);
 			}
 			return;
 		}
@@ -575,7 +580,7 @@ namespace SimpleRadio
 		{
 			this->teamSpeakControlledClientData.selected = 0;
 
-			sprintf_s(buffer, 256, "Selected UHF -  Current Freq (MHz): %.4f", teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected].frequency / MHZ);
+			sprintf_s(buffer, 256, "Selected Radio 1 -  Current Freq (MHz): %.4f", teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected].frequency / MHZ);
 
 			this->teamspeak.printMessageToCurrentTab(buffer);
 		}
@@ -583,7 +588,7 @@ namespace SimpleRadio
 		{
 			this->teamSpeakControlledClientData.selected = 1;
 
-			sprintf_s(buffer, 256, "Selected VHF -  Current Freq (MHz): %.4f", teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected].frequency / MHZ);
+			sprintf_s(buffer, 256, "Selected Radio 2 -  Current Freq (MHz): %.4f", teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected].frequency / MHZ);
 
 			this->teamspeak.printMessageToCurrentTab(buffer);
 		}
@@ -591,7 +596,7 @@ namespace SimpleRadio
 		{
 			this->teamSpeakControlledClientData.selected = 2;
 
-			sprintf_s(buffer, 256, "Selected FM -  Current Freq (MHz): %.4f", teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected].frequency / MHZ);
+			sprintf_s(buffer, 256, "Selected Radio 3 -  Current Freq (MHz): %.4f", teamSpeakControlledClientData.radio[teamSpeakControlledClientData.selected].frequency / MHZ);
 
 			this->teamspeak.printMessageToCurrentTab(buffer);
 		}
@@ -1706,9 +1711,9 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	* The keyword will be later passed to ts3plugin_onHotkeyEvent to identify which hotkey was triggered.
 	* The description is shown in the clients hotkey dialog. */
 	BEGIN_CREATE_HOTKEYS(21);  /* Create 21 hotkeys. Size must be correct for allocating memory. */
-	CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select UHF AM");
-	CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select VHF AM");
-	CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select FM");
+	CREATE_HOTKEY("DCS-SR-TRANSMIT-UHF", "Select Radio 1");
+	CREATE_HOTKEY("DCS-SR-TRANSMIT-VHF", "Select Radio 2");
+	CREATE_HOTKEY("DCS-SR-TRANSMIT-FM", "Select Radio 3");
 
 	CREATE_HOTKEY("DCS-SR-FREQ-10-UP", "Frequency Up - 10MHz");
 	CREATE_HOTKEY("DCS-SR-FREQ-10-DOWN", "Frequency Down - 10MHz");
@@ -1779,9 +1784,9 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 4, "Disable Radio FX", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 5, "Plugin ON", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 6, "Plugin OFF", "");
-		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 7, "Select UHF AM", "");
-		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 8, "Select VHF AM", "");
-		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 9, "Select FM", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 7, "Select Radio 1", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 8, "Select Radio 2", "");
+		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 9, "Select Radio 3", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 10, "Mute Non Radio Users", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 11, "UnMute Non Radio Users", "");
 		CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 12, "Radio ON for Spectating / CA", "");
