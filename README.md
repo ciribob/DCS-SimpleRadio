@@ -1,4 +1,4 @@
-# This project is no longer under active development and has been replace by SimpleRadio Standalone: https://github.com/ciribob/DCS-SimpleRadioStandalone
+# This project is no longer under active development and has been replaced by SimpleRadio Standalone: https://github.com/ciribob/DCS-SimpleRadioStandalone
 
 # DCS-SimpleRadio
 
