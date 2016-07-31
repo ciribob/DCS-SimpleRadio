@@ -1,3 +1,5 @@
+# This project is no longer under active development and has been replace by SimpleRadio Standalone: https://github.com/ciribob/DCS-SimpleRadioStandalone
+
 # DCS-SimpleRadio
 
 DCS-SimpleRadio allows a better integration between TeamSpeak 3 and DCS. DCS-SimpleRadio will use the currently selected radio and frequency to decide if others can hear you or not.
